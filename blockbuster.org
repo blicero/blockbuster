@@ -1,0 +1,47 @@
+# -*- mode: org; fill-column: 78; -*-
+# Time-stamp: <2021-08-02 22:43:53 krylon>
+#
+#+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
+#+TAGS: database(d)
+#+TAGS: optimize(o) refactor(r) cleanup(c)
+#+TODO: TODO(t)  RESEARCH(r) IMPLEMENT(i) TEST(e) | DONE(d) FAILED(f) CANCELLED(c)
+#+TODO: MEDITATE(m) PLANNING(p)
+#+PRIORITIES: A G D
+
+
+Blockbuster is an application to keep track of a collection of video files.
+If you're like me, you own a DVD collection that is not to be frowned upon,
+but these days, none of your computers have an optical drive any more, because
+this isn't 2006. So you got an external DVD drive or whatever and ripped them
+to hard disk, NAS, or whatever, and now you want to keep track track of what's
+what.
+
+Welcome to blockbuster. I want blockbuster to keep track of a collection of
+video files, possibly spread across several folders, disks, or servers, series
+and movies, and I want to edit metadata, annotate files with actors/actresses,
+directors, genres, years, links to IMDB, Wikipedia, etc.
+
+I already wrote one such application in Ruby many years ago, but these days I
+feel more comfortable with Go, and now that I discovered Go can do GUI
+applications as well, I am good to go. So let's do this!
+
+* Blockbuster
+** Clocktable
+   Org-mode, if you're not familiar, is like a note-taking application on LSD,
+   caffeine, and OCD. Among other things, this means, I get to keep track of
+   the time I am spending on the (soon-to-be) various parts of the
+   application, and have emacs render me a nice table to see how I wasted my
+   time. Behold:
+#+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
+#+CAPTION: Clock summary at [2021-08-02 Mo 22:31]
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:
+** Backend
+*** Database
+    SQLite it is, then.
+*** Scanner
+    I want to be able to keep track of multiple root directories containing
+    video files, movies as well as series.
+** GUI
