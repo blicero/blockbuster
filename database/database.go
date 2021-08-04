@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 10:11:42 krylon>
+// Time-stamp: <2021-08-04 12:02:22 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -23,6 +23,7 @@ import (
 	"github.com/blicero/blockbuster/logdomain"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/krylib"
+	_ "github.com/mattn/go-sqlite3" // Import the database driver
 )
 
 var (
@@ -632,5 +633,118 @@ EXEC_QUERY:
 
 // FileRemove deletes a File from the Database.
 func (db *Database) FileRemove(f *objects.File) error {
-	return krylib.ErrNotImplemented
+	const qid query.ID = query.FileRemove
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot delete File %s (%d) from database: %s",
+				f.Path,
+				f.ID,
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
 } // func (db *Database) FileRemove(f *objects.File) error
+
+// FileGetAll retrieves all registered Files from the Database.
+func (db *Database) FileGetAll() ([]objects.File, error) {
+	const qid query.ID = query.FileGetAll
+
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var list = make([]objects.File, 0, 256)
+
+	for rows.Next() {
+		var (
+			f objects.File
+		)
+
+		if err = rows.Scan(&f.ID, &f.Path, &f.Title, &f.Year); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		list = append(list, f)
+	}
+
+	return list, nil
+} // func (db *Database) FileGetAll() ([]objects.File, error)
