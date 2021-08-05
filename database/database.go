@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 12:02:22 krylon>
+// Time-stamp: <2021-08-05 10:06:36 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -735,12 +735,22 @@ EXEC_QUERY:
 
 	for rows.Next() {
 		var (
-			f objects.File
+			f     objects.File
+			title *string
+			year  *int64
 		)
 
-		if err = rows.Scan(&f.ID, &f.Path, &f.Title, &f.Year); err != nil {
+		if err = rows.Scan(&f.ID, &f.Path, &title, &year); err != nil {
 			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
 			return nil, err
+		}
+
+		if title != nil {
+			f.Title = *title
+		}
+
+		if year != nil {
+			f.Year = int(*year)
 		}
 
 		list = append(list, f)
