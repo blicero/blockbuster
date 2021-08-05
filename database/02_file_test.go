@@ -2,12 +2,13 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-05 10:04:35 krylon>
+// Time-stamp: <2021-08-05 11:14:15 krylon>
 
 package database
 
 import (
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"testing"
 
@@ -67,3 +68,40 @@ func TestFileGetAll(t *testing.T) {
 			len(testFiles))
 	}
 } // func TestFileGetAll(t *testing.T)
+
+func TestFileRemove(t *testing.T) {
+	const chance = 0.25
+	var (
+		err    error
+		delCnt int
+	)
+
+	if tdb == nil {
+		t.SkipNow()
+	}
+
+	for _, f := range testFiles {
+		if rand.Float64() < chance {
+			if err = tdb.FileRemove(&f); err != nil {
+				t.Fatalf("Error removing file %s (%d): %s",
+					f.Path,
+					f.ID,
+					err.Error())
+			}
+
+			delCnt++
+		}
+	}
+
+	var fetchFiles []objects.File
+
+	if fetchFiles, err = tdb.FileGetAll(); err != nil {
+		t.Fatalf("Cannot load all Files from Database: %s",
+			err.Error())
+	} else if len(fetchFiles) != fileCnt-delCnt {
+		t.Fatalf("After deleting %d Files, unexpected number of Files was returned: %d (expected %d)",
+			delCnt,
+			fileCnt,
+			fileCnt-delCnt)
+	}
+} // func TestFileRemove(t *testing.T)
