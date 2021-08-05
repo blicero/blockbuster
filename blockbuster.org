@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-04 12:11:40 krylon>
+# Time-stamp: <2021-08-05 11:14:52 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,18 +33,19 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-04 Mi 12:11]
+#+CAPTION: Clock summary at [2021-08-05 Do 11:14]
 | Headline       | Time   |        |      |
 |----------------+--------+--------+------|
-| *Total time*   | *1:37* |        |      |
+| *Total time*   | *3:11* |        |      |
 |----------------+--------+--------+------|
-| *Blockbuster*  | *1:37* |        |      |
-| \_  /Backend/  |        | /1:37/ |      |
-| \_    Database |        |        | 1:37 |
+| *Blockbuster*  | *3:11* |        |      |
+| \_  /Backend/  |        | /3:11/ |      |
+| \_    Database |        |        | 3:11 |
 #+END:
 ** Backend
 *** Database
     :LOGBOOK:
+    CLOCK: [2021-08-05 Do 09:40]--[2021-08-05 Do 11:14] =>  1:34
     CLOCK: [2021-08-04 Mi 11:25]--[2021-08-04 Mi 12:11] =>  0:46
     CLOCK: [2021-08-03 Di 20:24]--[2021-08-03 Di 21:15] =>  0:51
     :END:
