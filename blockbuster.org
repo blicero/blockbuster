@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-05 11:14:52 krylon>
+# Time-stamp: <2021-08-05 23:52:53 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -45,12 +45,20 @@ applications as well, I am good to go. So let's do this!
 ** Backend
 *** Database
     :LOGBOOK:
+    CLOCK: [2021-08-05 Do 18:13]--[2021-08-05 Do 21:41] =>  3:28
+    CLOCK: [2021-08-05 Do 14:14]--[2021-08-05 Do 14:41] =>  0:27
     CLOCK: [2021-08-05 Do 09:40]--[2021-08-05 Do 11:14] =>  1:34
     CLOCK: [2021-08-04 Mi 11:25]--[2021-08-04 Mi 12:11] =>  0:46
     CLOCK: [2021-08-03 Di 20:24]--[2021-08-03 Di 21:15] =>  0:51
     :END:
     SQLite it is, then.
+**** Schema
+     I am kind of looking at my old Ruby video library app, and I am looking
+     for things I want to keep, and things I want to do differently.
 *** Scanner
     I want to be able to keep track of multiple root directories containing
     video files, movies as well as series.
 ** GUI
+   :LOGBOOK:
+   CLOCK: [2021-08-05 Do 21:48]--[2021-08-05 Do 23:52] =>  2:04
+   :END:
