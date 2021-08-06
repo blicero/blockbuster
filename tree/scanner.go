@@ -1,11 +1,11 @@
-// /home/krylon/go/src/github.com/blicero/blockbuster/scanner/scanner.go
+// /home/krylon/go/src/github.com/blicero/blockbuster/tree/scanner.go
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-05 20:23:50 krylon>
+// Time-stamp: <2021-08-05 22:13:40 krylon>
 
-// Package scanner implements scanning directory trees for video files.
-package scanner
+// Package tree implements scanning directory trees for video files.
+package tree
 
 import (
 	"io/fs"
@@ -45,8 +45,10 @@ type Scanner struct {
 	workerCnt int
 }
 
-// New creates a new Scanner that will handle the given list of paths.
-func New(cnt int) (*Scanner, error) {
+// NewScanner creates a new Scanner that will handle the given list of paths.
+// cnt is the number of goroutines to allocate for walking the directory trees
+// in parallel.
+func NewScanner(cnt int) (*Scanner, error) {
 	var (
 		err error
 		s   = &Scanner{
@@ -70,7 +72,7 @@ func New(cnt int) (*Scanner, error) {
 	}
 
 	return s, nil
-} // func New(path... string) (*Scanner, error)
+} // func NewScanner(cnt int) (*Scanner, error)
 
 // Active returns true if the Scanner is currently active.
 func (s *Scanner) Active() bool {
