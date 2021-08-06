@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-06 21:31:38 krylon>
+# Time-stamp: <2021-08-06 23:49:01 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,15 +33,16 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-06 Fr 20:49]
+#+CAPTION: Clock summary at [2021-08-06 Fr 23:49]
 | Headline             | Time    |        |      |
 |----------------------+---------+--------+------|
-| *Total time*         | *10:57* |        |      |
+| *Total time*         | *14:15* |        |      |
 |----------------------+---------+--------+------|
-| *Blockbuster*        | *10:57* |        |      |
+| *Blockbuster*        | *14:15* |        |      |
 | \_  /Backend/        |         | /7:06/ |      |
 | \_    Database       |         |        | 7:06 |
-| \_  /GUI/            |         | /3:51/ |      |
+| \_  /GUI/            |         | /7:09/ |      |
+| \_    Menu           |         |        | 3:18 |
 | \_    Initialization |         |        | 1:45 |
 #+END:
 ** Backend
@@ -67,7 +68,7 @@ applications as well, I am good to go. So let's do this!
    :END:
 *** TODO Menu
     :LOGBOOK:
-    CLOCK: [2021-08-06 Fr 20:30]
+    CLOCK: [2021-08-06 Fr 20:30]--[2021-08-06 Fr 23:48] =>  3:18
     :END:
     As I _slowly_ recover my memories of Gtk2's way of doing menus, and try to
     tranfer those recovered, hazy memories to Gtk3, I begin to realize that
