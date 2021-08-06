@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-06 20:52:47 krylon>
+# Time-stamp: <2021-08-06 21:31:38 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -69,31 +69,44 @@ applications as well, I am good to go. So let's do this!
     :LOGBOOK:
     CLOCK: [2021-08-06 Fr 20:30]
     :END:
-    I want a menu. That shouldn't be too hard, but I feel that GUI programming
-    in Go is rather tedious.
-    Maybe it is a quality of GUI programming with statically typed languages
-    in general? Or OOP vs Non-OOP? Gtk2 in Ruby and to a slightly lesser
-    degree in Python2 felt very natural, whereas, say Swing in Java, as well
-    as this, feels a little forced.
-    Maybe I am just being whiney.
-    I mean, I could just use Ruby, my old video store application still works
-    on Debian, but with Ruby - and scripting languages in general - I have
-    learned that moving your application from one OS/distro/version to another
-    becomes extremely tedious at best, because of the dependencies. I am
-    beginning to understand that that is the problem that drove people to
-    containers, and maybe that means I should learn about them.
-    Anyway, the promise of Go, of course, is that by linking statically, your
-    output is one binary, a *really* large binary, but that really large
-    binary includes /everything/, from the Go runtime to all your dependencies
-    and /their/ dependencies and so forth.
-    So once you got a binary, you can just drop that on any compatible system,
-    and it should "just work".
-    And Go's model lends itself to more easily reproducible build
-    environments.
-    ...
-    Okay, I'll stop shaking my fist at the clouds now.
-    The point is, is all this tedium the inevitable price of improved
-    portability across effectively Linux distros and BSDs?
+    As I _slowly_ recover my memories of Gtk2's way of doing menus, and try to
+    tranfer those recovered, hazy memories to Gtk3, I begin to realize that
+    setting up the menu bar is quite likely every bit as tedious as setting up
+    the TreeView instances, so maybe I should handle them in a similar manner.
+**** Random Ramblings
+     I want a menu. That shouldn't be too hard, but I feel that GUI programming
+     in Go is rather tedious.
+     Maybe it is a quality of GUI programming with statically typed languages
+     in general? Or OOP vs Non-OOP? Gtk2 in Ruby and to a slightly lesser
+     degree in Python2 felt very natural, whereas, say Swing in Java, as well
+     as this, feels a little forced.
+     Maybe I am just being whiney.
+     I mean, I could just use Ruby, my old video store application still works
+     on Debian, but with Ruby - and scripting languages in general - I have
+     learned that moving your application from one OS/distro/version to another
+     becomes extremely tedious at best, because of the dependencies. I am
+     beginning to understand that that is the problem that drove people to
+     containers, and maybe that means I should learn about them.
+     Anyway, the promise of Go, of course, is that by linking statically, your
+     output is one binary, a *really* large binary, but that really large
+     binary includes /everything/, from the Go runtime to all your dependencies
+     and /their/ dependencies and so forth.
+     So once you got a binary, you can just drop that on any compatible system,
+     and it should "just work".
+     And Go's model lends itself to more easily reproducible build
+     environments.
+     ...
+     The point is, is all this tedium the inevitable price of improved
+     portability across effectively Linux distros and BSDs?
+     ....
+     Another thing is that I feel a mismatch between Go's type system and
+     Gtk's. Gtk in C is already pretty weird. I have never used it from C++,
+     because I am not a C++ lover (although I did a little GUI programming
+     with C++ and Qt4, and that was quite nice), but like I said, with Python
+     and Ruby, both object-oriented languages, Gtk's type hierarchy naturally
+     translated into class hierarchies and allowed for interesting things,
+     especially subclassing existing widget classes.
+     In Go, this doesn't work, because there is no inheritance.
 *** DONE Initialization
     CLOSED: [2021-08-06 Fr 20:22]
     :LOGBOOK:
