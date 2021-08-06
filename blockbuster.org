@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-05 23:52:53 krylon>
+# Time-stamp: <2021-08-06 20:22:41 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,14 +33,16 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-05 Do 11:14]
-| Headline       | Time   |        |      |
-|----------------+--------+--------+------|
-| *Total time*   | *3:11* |        |      |
-|----------------+--------+--------+------|
-| *Blockbuster*  | *3:11* |        |      |
-| \_  /Backend/  |        | /3:11/ |      |
-| \_    Database |        |        | 3:11 |
+#+CAPTION: Clock summary at [2021-08-06 Fr 20:22]
+| Headline             | Time    |        |      |
+|----------------------+---------+--------+------|
+| *Total time*         | *10:57* |        |      |
+|----------------------+---------+--------+------|
+| *Blockbuster*        | *10:57* |        |      |
+| \_  /Backend/        |         | /7:06/ |      |
+| \_    Database       |         |        | 7:06 |
+| \_  /GUI/            |         | /3:51/ |      |
+| \_    Initialization |         |        | 1:45 |
 #+END:
 ** Backend
 *** Database
@@ -60,5 +62,15 @@ applications as well, I am good to go. So let's do this!
     video files, movies as well as series.
 ** GUI
    :LOGBOOK:
+   CLOCK: [2021-08-06 Fr 18:34]--[2021-08-06 Fr 18:36] =>  0:02
    CLOCK: [2021-08-05 Do 21:48]--[2021-08-05 Do 23:52] =>  2:04
    :END:
+*** DONE Initialization
+    CLOSED: [2021-08-06 Fr 20:22]
+    :LOGBOOK:
+    CLOCK: [2021-08-06 Fr 18:36]--[2021-08-06 Fr 20:21] =>  1:45
+    :END:
+    The initialization of the various TreeViews and their associated
+    TreeStores/ListStores is /really/ tedious, and if I want to ever change or
+    extend this (which I almost certainly will), I need to find a way to make
+    the whole process more ... data-driven, less reptetitive.
