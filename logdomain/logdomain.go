@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 10:07:50 krylon>
+// Time-stamp: <2021-08-05 22:07:55 krylon>
 
 // Package logdomain provides constants for log sources.
 package logdomain
@@ -16,6 +16,7 @@ type ID uint8
 const (
 	Common ID = iota
 	Database
+	GUI
 	Scanner
 )
 
@@ -24,6 +25,7 @@ func AllDomains() []ID {
 	return []ID{
 		Common,
 		Database,
+		GUI,
 		Scanner,
 	}
 } // func AllDomains() []ID
