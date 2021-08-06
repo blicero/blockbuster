@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-06 20:19:09 krylon>
+// Time-stamp: <2021-08-06 21:33:38 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -86,6 +86,39 @@ func Create() (*GUI, error) {
 		return nil, err
 	}
 
+	var (
+		fileMenu                   *gtk.Menu
+		scanItem, quitItem, fmItem *gtk.MenuItem
+	)
+
+	if fileMenu, err = gtk.MenuNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create File menu: %s\n",
+			err.Error())
+		return nil, err
+	} else if scanItem, err = gtk.MenuItemNewWithMnemonic("_Scan"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/Scan: %s\n",
+			err.Error())
+		return nil, err
+	} else if quitItem, err = gtk.MenuItemNewWithMnemonic("_Quit"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/Quit: %s\n",
+			err.Error())
+		return nil, err
+	} else if fmItem, err = gtk.MenuItemNewWithMnemonic("_File"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/: %s\n",
+			err.Error())
+		return nil, err
+	}
+
+	scanItem.Connect("activate", g.promptScanFolder)
+	quitItem.Connect("activate", gtk.MainQuit)
+
+	fmItem.SetSubmenu(fileMenu)
+
+	fileMenu.Append(scanItem)
+	fileMenu.Append(quitItem)
+
+	g.menubar.Append(fmItem)
+
 	g.tabs = make([]tabContent, len(viewList))
 
 	for tabIdx, v := range viewList {
@@ -148,3 +181,7 @@ func (g *GUI) scanLoop() {
 		}
 	}
 } // func (g *GUI) scanLoop()
+
+func (g *GUI) promptScanFolder() {
+	g.log.Printf("[DEBUG] Suck it!\n")
+} // func (g *GUI) promptScanFolder()
