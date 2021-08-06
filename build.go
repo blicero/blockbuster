@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 10:17:57 krylon>
+// Time-stamp: <2021-08-06 15:16:43 krylon>
 
 // +build ignore
 
@@ -70,6 +70,7 @@ var candidates = map[string][]string{
 		"database/query",
 		"logdomain",
 		"objects",
+		"ui",
 	},
 	"lint": []string{
 		"common",
@@ -77,6 +78,7 @@ var candidates = map[string][]string{
 		"database/query",
 		"logdomain",
 		"objects",
+		"ui",
 	},
 }
 
@@ -226,7 +228,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 	if steps["build"] {
 		var output []byte
 
-		dbg.Println("[INFO] Building ticker\n")
+		dbg.Println("[INFO] Building blockbuster\n")
 
 		// Put aside a possibly existing binary
 		if err = backupExecutable(); err != nil {
@@ -239,7 +241,7 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 		var sWorkerCnt = strconv.FormatInt(int64(workerCnt), 10)
 		var cmd = exec.Command("go", "build", "-v", "-p", sWorkerCnt)
 		if output, err = cmd.CombinedOutput(); err != nil {
-			dbg.Printf("[ERROR] Error building ticker: %s\n%s\n",
+			dbg.Printf("[ERROR] Error building blockbuster: %s\n%s\n",
 				err.Error(),
 				output)
 			os.Exit(1)
@@ -342,7 +344,7 @@ func worker(n int, op string, pkgq <-chan string, errq chan<- error, wg *sync.Wa
 	defer wg.Done()
 
 	for folder := range pkgq {
-		pkg = "ticker/" + folder
+		pkg = "github.com/blicero/blockbuster/" + folder
 		dbg.Printf("[TRACE] Worker %d call %s on %s\n",
 			n,
 			op,
@@ -433,7 +435,7 @@ func initLog(min string) error {
 		writer io.Writer
 		// Trailing space because Logger does not seem to insert one
 		// between fields of the line.
-		logName = "ticker.build "
+		logName = "blockbuster.build "
 	)
 
 	// fmt.Printf("Creating Logger with minLevel = %q\n",
@@ -463,8 +465,8 @@ func initLog(min string) error {
 
 func backupExecutable() error {
 	const (
-		execPath   = "ticker"
-		backupPath = "bak.ticker"
+		execPath   = "blockbuster"
+		backupPath = "bak.blockbuster"
 	)
 	var (
 		exists bool
