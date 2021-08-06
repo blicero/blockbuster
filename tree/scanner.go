@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-05 22:13:40 krylon>
+// Time-stamp: <2021-08-06 23:41:59 krylon>
 
 // Package tree implements scanning directory trees for video files.
 package tree
@@ -100,6 +100,12 @@ func (s *Scanner) Start(newFileQ chan<- *objects.File) error {
 		db  *database.Database
 	)
 
+	// We open the database here and not in gatherFiles(), so we know if
+	// it fails. If we spawn gatherFiles() in a separate goroutine and open
+	// the database there, we'll never know if it failed.
+	// So we do it here, before we start all the workers, and if it fails
+	// (which is unlikely, tbh), we don't start anything at all.
+
 	if db, err = database.Open(common.DbPath); err != nil {
 		s.log.Printf("[ERROR] Cannot open Database: %s\n",
 			err.Error())
@@ -121,6 +127,8 @@ func (s *Scanner) Start(newFileQ chan<- *objects.File) error {
 // The actual scanning happens in a separate goroutine.
 func (s *Scanner) ScanPath(paths ...string) {
 	for _, path := range paths {
+		s.log.Printf("[TRACE] Adding %q to scan queue\n",
+			path)
 		s.scanQ <- path
 	}
 } // func (s *Scanner) ScanPath(path string)
@@ -243,6 +251,9 @@ func (s *Scanner) gatherFiles(db *database.Database, newQ chan<- *objects.File) 
 					err.Error())
 				continue
 			}
+
+			s.log.Printf("[DEBUG] Add file %q to Database.\n",
+				path)
 
 			knownFiles[path] = true
 
