@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 18:02:47 krylon>
+// Time-stamp: <2021-08-07 21:49:56 krylon>
 
 package database
 
@@ -18,9 +18,8 @@ CREATE TABLE file (
     id INTEGER PRIMARY KEY,
     folder_id INTEGER NOT NULL,
     path TEXT UNIQUE NOT NULL,
-    title TEXT,
-    year INTEGER,
-    CHECK (year IS NULL OR year > 1900),
+    title TEXT NOT NULL DEFAULT '',
+    year INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (folder_id) REFERENCES folder (id)
        ON DELETE RESTRICT
        ON UPDATE RESTRICT
@@ -33,7 +32,7 @@ CREATE TABLE file (
 CREATE TABLE person (
     id INTEGER PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
-    year_born INTEGER NOT NULL,
+    year_born INTEGER NOT NULL DEFAULT 0,
     UNIQUE (name)
 )`,
 
@@ -44,7 +43,7 @@ CREATE TABLE person_url (
     id INTEGER PRIMARY KEY,
     person_id INTEGER NOT NULL,
     url TEXT NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL DEFAULT '',
     FOREIGN KEY (person_id) REFERENCES person (id)
         ON DELETE RESTRICT
         ON UPDATE RESTRICT
@@ -57,7 +56,7 @@ CREATE TABLE file_url (
     id INTEGER PRIMARY KEY,
     file_id INTEGER NOT NULL,
     url TEXT NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL DEFAULT '',
     FOREIGN KEY (file_id) REFERENCES file (id)
        ON DELETE RESTRICT
        ON UPDATE RESTRICT

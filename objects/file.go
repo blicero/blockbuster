@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 19:08:48 krylon>
+// Time-stamp: <2021-08-07 21:35:08 krylon>
 
 package objects
 
@@ -12,5 +12,5 @@ type File struct {
 	FolderID int64
 	Path     string
 	Title    string
-	Year     int
+	Year     int64
 }
