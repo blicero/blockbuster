@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 20:38:31 krylon>
+// Time-stamp: <2021-08-08 01:18:24 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -94,6 +94,8 @@ func Create() (*GUI, error) {
 		return nil, err
 	}
 
+	// FIXME I think I should somehow make the menu more data driven. Kinda like the TreeViews.
+
 	var (
 		fileMenu                   *gtk.Menu
 		scanItem, quitItem, fmItem *gtk.MenuItem
@@ -116,6 +118,14 @@ func Create() (*GUI, error) {
 			err.Error())
 		return nil, err
 	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	///// Context Menus ////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
+
+	// One thing I really liked about the old Ruby application was that I
+	// had sensible context menus, so I could right-click any object in a
+	// tree view and get a meaningful list of things to do.
 
 	scanItem.Connect("activate", g.promptScanFolder)
 	quitItem.Connect("activate", gtk.MainQuit)
@@ -156,6 +166,13 @@ func Create() (*GUI, error) {
 		tab.scr.Add(tab.view)
 		g.notebook.AppendPage(tab.scr, lbl)
 
+	}
+
+	//g.tabs[0].view.Connect("clicked", g.handleFileListClick)
+	for i := 0; i < int(g.tabs[0].view.GetNColumns()); i++ {
+		var col = g.tabs[0].view.GetColumn(i)
+
+		col.Connect("clicked", g.handleFileListClick)
 	}
 
 	g.win.Connect("destroy", gtk.MainQuit)
@@ -292,3 +309,7 @@ func (g *GUI) promptScanFolder() {
 	}
 
 } // func (g *GUI) promptScanFolder()
+
+func (g *GUI) handleFileListClick() {
+	g.log.Println("[TRACE] Baby, klick mich an, auf der Datenautobahn...")
+} // func (g *GUI) handleFileListClick()
