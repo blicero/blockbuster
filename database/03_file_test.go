@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 04. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-05 11:14:15 krylon>
+// Time-stamp: <2021-08-07 19:15:45 krylon>
 
 package database
 
@@ -16,8 +16,7 @@ import (
 )
 
 const (
-	fileCnt  = 100
-	basePath = "/test/Video"
+	fileCnt = 100
 )
 
 var testFiles []objects.File
@@ -29,7 +28,7 @@ func init() {
 func TestFileAdd(t *testing.T) {
 	var err error
 
-	if tdb == nil {
+	if tdb == nil || folder == nil {
 		t.SkipNow()
 	}
 
@@ -39,7 +38,7 @@ func TestFileAdd(t *testing.T) {
 			filename = filepath.Join(basePath, fmt.Sprintf("test_video_%03d.mp4", i))
 		)
 
-		if f, err = tdb.FileAdd(filename); err != nil {
+		if f, err = tdb.FileAdd(filename, folder); err != nil {
 			t.Fatalf("Error adding File %s to Database: %s",
 				filename,
 				err.Error())
@@ -55,7 +54,7 @@ func TestFileGetAll(t *testing.T) {
 		err        error
 	)
 
-	if tdb == nil {
+	if tdb == nil || folder == nil {
 		t.SkipNow()
 	}
 
@@ -76,7 +75,7 @@ func TestFileRemove(t *testing.T) {
 		delCnt int
 	)
 
-	if tdb == nil {
+	if tdb == nil || folder == nil {
 		t.SkipNow()
 	}
 

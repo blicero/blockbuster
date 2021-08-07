@@ -2,18 +2,28 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 12:10:08 krylon>
+// Time-stamp: <2021-08-07 18:02:47 krylon>
 
 package database
 
 var initQueries = []string{
+	`CREATE TABLE folder(
+    id            INTEGER PRIMARY KEY,
+    path          TEXT UNIQUE NOT NULL,
+    last_scan     INTEGER NOT NULL DEFAULT 0
+)`,
+
 	`
 CREATE TABLE file (
     id INTEGER PRIMARY KEY,
+    folder_id INTEGER NOT NULL,
     path TEXT UNIQUE NOT NULL,
     title TEXT,
     year INTEGER,
-    CHECK (year IS NULL OR year > 1900)
+    CHECK (year IS NULL OR year > 1900),
+    FOREIGN KEY (folder_id) REFERENCES folder (id)
+       ON DELETE RESTRICT
+       ON UPDATE RESTRICT
 )`,
 
 	"CREATE INDEX file_path_idx ON file (path)",
@@ -36,6 +46,8 @@ CREATE TABLE person_url (
     url TEXT NOT NULL,
     description TEXT,
     FOREIGN KEY (person_id) REFERENCES person (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
 )`,
 
 	"CREATE INDEX person_url_person_idx ON person_url (person_id)",
@@ -47,6 +59,8 @@ CREATE TABLE file_url (
     url TEXT NOT NULL,
     description TEXT,
     FOREIGN KEY (file_id) REFERENCES file (id)
+       ON DELETE RESTRICT
+       ON UPDATE RESTRICT
 )`,
 
 	`
@@ -62,8 +76,12 @@ CREATE TABLE tag (
     file_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
     UNIQUE (file_id, tag_id),
-    FOREIGN KEY (file_id) REFERENCES file (id),
+    FOREIGN KEY (file_id) REFERENCES file (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT,
     FOREIGN KEY (tag_id) REFERENCES tag (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
 )`,
 
 	"CREATE INDEX file_tag_link_file_idx ON file_tag_link (file_id)",

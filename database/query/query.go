@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 11:34:13 krylon>
+// Time-stamp: <2021-08-07 18:36:36 krylon>
 
 //go:generate stringer -type=ID
 
@@ -16,7 +16,13 @@ type ID uint8
 const (
 	FileAdd ID = iota
 	FileRemove
+	FileRemoveByFolder
 	FileGetAll
 	FileGetByPath
 	FileGetByID
+	FolderAdd
+	FolderUpdateScan
+	FolderRemove
+	FolderGetAll
+	FolderGetByPath
 )
