@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 03:06:27 krylon>
+// Time-stamp: <2021-08-07 17:50:07 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -161,7 +161,7 @@ func Create() (*GUI, error) {
 	g.win.Connect("destroy", gtk.MainQuit)
 
 	g.mainBox.PackStart(g.menubar, false, false, 0)
-	g.mainBox.PackStart(g.notebook, false, false, 0)
+	g.mainBox.PackStart(g.notebook, true, true, 0)
 	g.win.Add(g.mainBox)
 	g.win.SetSizeRequest(960, 540)
 
@@ -181,8 +181,8 @@ func (g *GUI) ShowAndRun() {
 		return
 	}
 
-	for _, file := range list {
-		var handler = g.makeNewFileHandler(&file)
+	for idx := range list {
+		var handler = g.makeNewFileHandler(&list[idx])
 		glib.IdleAdd(handler)
 	}
 
