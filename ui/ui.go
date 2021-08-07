@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 17:50:07 krylon>
+// Time-stamp: <2021-08-07 20:38:31 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -56,7 +56,9 @@ type GUI struct {
 func Create() (*GUI, error) {
 	var (
 		err error
-		g   = new(GUI)
+		g   = &GUI{
+			fileQ: make(chan *objects.File, qDepth),
+		}
 	)
 
 	if g.log, err = common.GetLogger(logdomain.GUI); err != nil {
@@ -66,13 +68,11 @@ func Create() (*GUI, error) {
 			common.DbPath,
 			err.Error())
 		return nil, err
-	} else if g.scanner, err = tree.NewScanner(4); err != nil {
+	} else if g.scanner, err = tree.NewScanner(g.fileQ); err != nil {
 		g.log.Printf("[ERROR] Cannot create Scanner: %s\n",
 			err.Error())
 		return nil, err
 	}
-
-	g.fileQ = make(chan *objects.File, qDepth)
 
 	gtk.Init(nil)
 
@@ -186,12 +186,6 @@ func (g *GUI) ShowAndRun() {
 		glib.IdleAdd(handler)
 	}
 
-	if err = g.scanner.Start(g.fileQ); err != nil {
-		g.log.Printf("[ERROR] Cannot start Scanner: %s\n",
-			err.Error())
-		return
-	}
-
 	go g.scanLoop()
 
 	g.win.ShowAll()
@@ -202,7 +196,7 @@ func (g *GUI) scanLoop() {
 	var ticker = time.NewTicker(refInterval)
 	defer ticker.Stop()
 
-	for g.scanner.Active() {
+	for {
 		select {
 		case <-ticker.C:
 			//g.log.Println("[TRACE] scanLoop says Hello.")
