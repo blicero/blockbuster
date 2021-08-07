@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 02:06:02 krylon>
+// Time-stamp: <2021-08-07 03:07:23 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -20,6 +20,7 @@ import (
 
 type tabIdx uint8
 
+// nolint: deadcode,unused,varcheck
 const (
 	tiFile tabIdx = iota
 	tiActor

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 02:08:07 krylon>
+// Time-stamp: <2021-08-07 03:06:27 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -170,7 +170,21 @@ func Create() (*GUI, error) {
 
 // ShowAndRun displays the GUI and runs the Gtk event loop.
 func (g *GUI) ShowAndRun() {
-	var err error
+	var (
+		err  error
+		list []objects.File
+	)
+
+	if list, err = g.db.FileGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot get list of all Files: %s\n",
+			err.Error())
+		return
+	}
+
+	for _, file := range list {
+		var handler = g.makeNewFileHandler(&file)
+		glib.IdleAdd(handler)
+	}
 
 	if err = g.scanner.Start(g.fileQ); err != nil {
 		g.log.Printf("[ERROR] Cannot start Scanner: %s\n",
