@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-06 23:49:01 krylon>
+# Time-stamp: <2021-08-07 19:52:16 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,17 +33,20 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-06 Fr 23:49]
-| Headline             | Time    |        |      |
-|----------------------+---------+--------+------|
-| *Total time*         | *14:15* |        |      |
-|----------------------+---------+--------+------|
-| *Blockbuster*        | *14:15* |        |      |
-| \_  /Backend/        |         | /7:06/ |      |
-| \_    Database       |         |        | 7:06 |
-| \_  /GUI/            |         | /7:09/ |      |
-| \_    Menu           |         |        | 3:18 |
-| \_    Initialization |         |        | 1:45 |
+#+CAPTION: Clock summary at [2021-08-07 Sa 19:52]
+| Headline             | Time    |        |      |      |      |
+|----------------------+---------+--------+------+------+------|
+| *Total time*         | *15:58* |        |      |      |      |
+|----------------------+---------+--------+------+------+------|
+| *Blockbuster*        | *15:58* |        |      |      |      |
+| \_  /Backend/        |         | /8:24/ |      |      |      |
+| \_    Database       |         |        | 8:24 |      |      |
+| \_      Schema       |         |        |      | 1:18 |      |
+| \_        Folders    |         |        |      |      | 1:18 |
+| \_  /GUI/            |         | /7:34/ |      |      |      |
+| \_    Folders        |         |        | 0:25 |      |      |
+| \_    Menu           |         |        | 3:18 |      |      |
+| \_    Initialization |         |        | 1:45 |      |      |
 #+END:
 ** Backend
 *** Database
@@ -58,14 +61,34 @@ applications as well, I am good to go. So let's do this!
 **** Schema
      I am kind of looking at my old Ruby video library app, and I am looking
      for things I want to keep, and things I want to do differently.
+***** DONE Folders
+      CLOSED: [2021-08-07 Sa 19:23]
+      :LOGBOOK:
+      CLOCK: [2021-08-07 Sa 18:05]--[2021-08-07 Sa 19:23] =>  1:18
+      :END:
+      Ah, in order to keep track of files being deleted or added, I need to
+      keep track of what folders I have scanned.
 *** Scanner
     I want to be able to keep track of multiple root directories containing
     video files, movies as well as series.
+**** TODO Folders
+     :LOGBOOK:
+     CLOCK: [2021-08-07 Sa 19:48]
+     :END:
+     I'm going to have to rethink how the Scanner is supposed to work if I'm
+     going to have Folders as objects in their own right in the database.
+     Not quite sure, yet, but I think I was a little over-ambitious with my
+     first design.
 ** GUI
    :LOGBOOK:
    CLOCK: [2021-08-06 Fr 18:34]--[2021-08-06 Fr 18:36] =>  0:02
    CLOCK: [2021-08-05 Do 21:48]--[2021-08-05 Do 23:52] =>  2:04
    :END:
+*** TODO Folders
+    :LOGBOOK:
+    CLOCK: [2021-08-07 Sa 19:23]--[2021-08-07 Sa 19:48] =>  0:25
+    :END:
+    
 *** TODO Menu
     :LOGBOOK:
     CLOCK: [2021-08-06 Fr 20:30]--[2021-08-06 Fr 23:48] =>  3:18
