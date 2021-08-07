@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-06 19:59:17 krylon>
+// Time-stamp: <2021-08-07 02:06:02 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -16,6 +16,14 @@ import (
 
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
+)
+
+type tabIdx uint8
+
+const (
+	tiFile tabIdx = iota
+	tiActor
+	tiTags
 )
 
 type storeType uint8

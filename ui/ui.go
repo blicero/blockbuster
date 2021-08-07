@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-06 23:43:13 krylon>
+// Time-stamp: <2021-08-07 02:08:07 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -17,6 +17,7 @@ import (
 	"github.com/blicero/blockbuster/logdomain"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/blockbuster/tree"
+	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
@@ -196,9 +197,47 @@ func (g *GUI) scanLoop() {
 			g.log.Printf("[DEBUG] Received new File %d: %s\n",
 				f.ID,
 				f.Path)
+			glib.IdleAdd(g.makeNewFileHandler(f))
 		}
 	}
 } // func (g *GUI) scanLoop()
+
+func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
+	var store *gtk.ListStore
+
+	switch t := g.tabs[tiFile].store.(type) {
+	case *gtk.ListStore:
+		store = t
+	default:
+		g.log.Printf("[CANTHAPPEN] Unexpected type for g.tabs[0].store: %T (expected *gtk.ListStore)\n",
+			g.tabs[0].store)
+		return func() bool { return false }
+	}
+
+	return func() bool {
+		var (
+			err  error
+			iter = store.Append()
+		)
+
+		if err = store.Set(
+			iter,
+			[]int{0},
+			[]interface{}{f.Path},
+		); err != nil {
+			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
+				f.ID,
+				f.Path,
+				err.Error())
+		} /*else {
+			g.log.Printf("[ERROR] makeNewFileHandler -- IMPLEMENT ME -- %8d -- %s\n",
+				f.ID,
+				f.Path)
+		}*/
+
+		return false
+	}
+} // func (g *GUI) makeNewFileHandler(f *objects.File) func() bool
 
 func (g *GUI) promptScanFolder() {
 	g.log.Printf("[DEBUG] You scannin', or what?!\n")
