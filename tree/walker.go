@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 07. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 20:22:29 krylon>
+// Time-stamp: <2021-08-07 21:41:40 krylon>
 
 package tree
 
@@ -19,6 +19,8 @@ const (
 	minSize       = 1024 * 1024 * 32 // 32 MB, minimum size for files to consider
 	suffixPattern = "(?i)[.](?:avi|mp4|mpg|asf|avi|flv|m4v|mkv|mov|mpg|ogm|ogv|sfv|webm|wmv)$"
 )
+
+// The walker struct handles the state required to scan a folder.
 
 type walker struct {
 	log   *log.Logger
@@ -57,7 +59,22 @@ func (w *walker) visitFile(path string, d fs.DirEntry, incoming error) error {
 			path,
 			krylib.FmtBytes(info.Size()))
 		return nil
-	} else if file, err = w.db.FileAdd(path, w.root); err != nil {
+	}
+
+	if w.root.IsKnown() {
+		if file, err = w.db.FileGetByPath(path); err != nil {
+			w.log.Printf("[ERROR] Cannot lookup File %q in Database: %s\n",
+				path,
+				err.Error())
+			return err
+		} else if file != nil {
+			w.log.Printf("[TRACE] We already know %q\n",
+				path)
+			return nil
+		}
+	}
+
+	if file, err = w.db.FileAdd(path, w.root); err != nil {
 		w.log.Printf("[ERROR] Cannot add File %q to Database: %s\n",
 			path,
 			err.Error())

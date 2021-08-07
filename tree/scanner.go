@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 20:36:54 krylon>
+// Time-stamp: <2021-08-07 21:19:54 krylon>
 
 // Package tree implements scanning directory trees for video files.
 package tree
@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/database"
@@ -97,12 +98,28 @@ func (s *Scanner) scanFolder(path string) {
 	db = s.pool.Get()
 	defer s.pool.Put(db)
 
-	if folder, err = db.FolderAdd(path); err != nil {
-		s.log.Printf("[ERROR] Cannot add Folder %s to database: %s\n",
+	if folder, err = db.FolderGetByPath(path); err != nil {
+		s.log.Printf("[ERROR] Cannot look for Folder %q in Database: %s\n",
 			path,
 			err.Error())
 		return
+	} else if folder == nil {
+		if folder, err = db.FolderAdd(path); err != nil {
+			s.log.Printf("[ERROR] Cannot add Folder %s to database: %s\n",
+				path,
+				err.Error())
+			return
+		}
 	}
+
+	defer func() {
+		var r error
+		if r = db.FolderUpdateScan(folder, time.Now()); r != nil {
+			s.log.Printf("[ERROR] Cannot update scan timestamp on Folder %q: %s\n",
+				path,
+				err.Error())
+		}
+	}()
 
 	var w = walker{
 		log:   s.log,

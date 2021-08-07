@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 19:17:51 krylon>
+// Time-stamp: <2021-08-07 21:44:23 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -752,7 +752,7 @@ func (db *Database) FolderUpdateScan(f *objects.Folder, stamp time.Time) error {
 	stmt = tx.Stmt(stmt)
 
 EXEC_QUERY:
-	if _, err = stmt.Exec(f.ID); err != nil {
+	if _, err = stmt.Exec(stamp.Unix(), f.ID); err != nil {
 		if worthARetry(err) {
 			waitForRetry()
 			goto EXEC_QUERY
@@ -1071,7 +1071,7 @@ EXEC_QUERY:
 		}
 
 		if year != nil {
-			f.Year = int(*year)
+			f.Year = *year
 		}
 
 		list = append(list, f)
@@ -1079,3 +1079,50 @@ EXEC_QUERY:
 
 	return list, nil
 } // func (db *Database) FileGetAll() ([]objects.File, error)
+
+// FileGetByPath retrieves a File objects by its path in the file system.
+func (db *Database) FileGetByPath(path string) (*objects.File, error) {
+	const qid query.ID = query.FileGetByPath
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(path); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	if rows.Next() {
+		var (
+			f = &objects.File{Path: path}
+		)
+
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Title, &f.Year); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		return f, nil
+	}
+
+	return nil, nil
+} // func (db *Database) FileGetByPath(path string) (*objects.File, error)
