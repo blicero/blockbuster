@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-06 23:41:59 krylon>
+// Time-stamp: <2021-08-07 19:44:34 krylon>
 
 // Package tree implements scanning directory trees for video files.
 package tree
@@ -36,7 +36,7 @@ var suffixRe = regexp.MustCompile(suffixPattern)
 
 // Scanner wraps all the handling of scanning Folders.
 type Scanner struct {
-	db        *database.Database
+	pool      *database.Pool
 	log       *log.Logger
 	active    bool
 	lock      sync.RWMutex
@@ -50,12 +50,19 @@ type Scanner struct {
 // in parallel.
 func NewScanner(cnt int) (*Scanner, error) {
 	var (
-		err error
-		s   = &Scanner{
+		err      error
+		poolSize int
+		s        = &Scanner{
 			fileQ: make(chan string, qSize),
 			scanQ: make(chan string, qSize),
 		}
 	)
+
+	if cnt < 4 {
+		poolSize = 2
+	} else {
+		poolSize = cnt / 2
+	}
 
 	if cnt <= 0 {
 		s.workerCnt = runtime.NumCPU()
@@ -65,7 +72,7 @@ func NewScanner(cnt int) (*Scanner, error) {
 
 	if s.log, err = common.GetLogger(logdomain.Scanner); err != nil {
 		return nil, err
-	} else if s.db, err = database.Open(common.DbPath); err != nil {
+	} else if s.pool, err = database.NewPool(poolSize); err != nil {
 		s.log.Printf("[ERROR] Cannot open Database at %s: %s\n",
 			common.DbPath,
 			err.Error())
@@ -95,26 +102,9 @@ func (s *Scanner) Start(newFileQ chan<- *objects.File) error {
 	s.log.Printf("[INFO] Starting Scanner with %d workers.\n",
 		s.workerCnt)
 
-	var (
-		err error
-		db  *database.Database
-	)
-
-	// We open the database here and not in gatherFiles(), so we know if
-	// it fails. If we spawn gatherFiles() in a separate goroutine and open
-	// the database there, we'll never know if it failed.
-	// So we do it here, before we start all the workers, and if it fails
-	// (which is unlikely, tbh), we don't start anything at all.
-
-	if db, err = database.Open(common.DbPath); err != nil {
-		s.log.Printf("[ERROR] Cannot open Database: %s\n",
-			err.Error())
-		return err
-	}
-
 	s.active = true
 
-	go s.gatherFiles(db, newFileQ)
+	go s.gatherFiles(newFileQ)
 
 	for i := 0; i < s.workerCnt; i++ {
 		go s.worker(i + 1)
@@ -164,7 +154,21 @@ func (s *Scanner) worker(id int) {
 } // func (s *Scanner) worker(id int)
 
 func (s *Scanner) scanFolder(path string) {
-	var err error
+	var (
+		err    error
+		db     *database.Database
+		folder *objects.Folder
+	)
+
+	db = s.pool.Get()
+	defer s.pool.Put(db)
+
+	if folder, err = db.FolderAdd(path); err != nil {
+		s.log.Printf("[ERROR] Cannot add Folder %s to database: %s\n",
+			path,
+			err.Error())
+		return
+	}
 
 	if err = filepath.WalkDir(path, s.visitFileFunc); err != nil {
 		s.log.Printf("[ERROR] Error walking %s: %s\n",
@@ -208,15 +212,17 @@ func (s *Scanner) visitFileFunc(path string, d fs.DirEntry, e error) error {
 	return nil
 } // func (s *Scanner) visitFileFunc(path string, d fs.DirEntry, e error) error
 
-func (s *Scanner) gatherFiles(db *database.Database, newQ chan<- *objects.File) {
+func (s *Scanner) gatherFiles(newQ chan<- *objects.File) {
 	var (
+		db         *database.Database
 		ticker     *time.Ticker
 		knownFiles map[string]bool
 	)
 
-	defer db.Close() // nolint: errcheck
+	db = s.pool.Get()
+	defer s.pool.Put(db)
 
-	if files, err := s.db.FileGetAll(); err == nil {
+	if files, err := db.FileGetAll(); err == nil {
 		knownFiles = make(map[string]bool, len(files))
 		for _, f := range files {
 			knownFiles[f.Path] = true
