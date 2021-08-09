@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 19:47:41 krylon>
+// Time-stamp: <2021-08-09 20:51:20 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -409,12 +409,28 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 
 func (g *GUI) handleTagAdd() {
 	var (
-		err   error
-		dlg   *gtk.Dialog
-		box   *gtk.Box
-		lbl   *gtk.Label
-		entry *gtk.Entry
+		err        error
+		dlg        *gtk.Dialog
+		dbox, hbox *gtk.Box
+		lbl        *gtk.Label
+		entry      *gtk.Entry
 	)
+
+	// XXX I would naively assume that if the function gtk.DialogNewWithButtons
+	//     accepts a slice of buttons (actually, pairs of strings and response values),
+	//     that it would display them.
+	//     But in my tests, I have only ever had one button displayed if they were supplied
+	//     via DialogNewWithButtons. No problemo, I thought, I can supply an empty slice and
+	//     use Dialog.AddButton to add the Buttons. More tedious, but what are you gonna do?
+	//     That resulted in a crash, however.
+	//     So the following trick, while looking very wrong, actually works:
+	//     - Supply two buttons, Cancel and OK to DialogNewWithButtons
+	//     - Add the OK button again with Dialog.AddButton
+	//
+	//     It's not a big drama, really, but it confused me quite a bit, so I thought I'd tell
+	//     my story in case anyone ever walks into the same trap.
+	//     I have no idea if this is a problem with Gtk, the Go bindings, or whatever, or maybe
+	//     even expected behaviour.
 
 	if dlg, err = gtk.DialogNewWithButtons(
 		"Add Tag",
@@ -434,7 +450,15 @@ func (g *GUI) handleTagAdd() {
 
 	defer dlg.Close()
 
-	if lbl, err = gtk.LabelNew("Name:"); err != nil {
+	if _, err = dlg.AddButton("OK", gtk.RESPONSE_OK); err != nil {
+		g.log.Printf("[ERROR] Cannot add cancel button to AddTag Dialog: %s\n",
+			err.Error())
+		return
+	} else if hbox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 1); err != nil {
+		g.log.Printf("[ERROR] Cannot create gtk.Box for AddTag Dialog: %s\n",
+			err.Error())
+		return
+	} else if lbl, err = gtk.LabelNew("Name:"); err != nil {
 		g.log.Printf("[ERROR] Cannot create Label for AddTag Dialog: %s\n",
 			err.Error())
 		return
@@ -442,22 +466,27 @@ func (g *GUI) handleTagAdd() {
 		g.log.Printf("[ERROR] Cannot create Entry for AddTag Dialog: %s\n",
 			err.Error())
 		return
-	} else if box, err = dlg.GetContentArea(); err != nil {
+	} else if dbox, err = dlg.GetContentArea(); err != nil {
 		g.log.Printf("[ERROR] Cannot get ContentArea of AddTag Dialog: %s\n",
 			err.Error())
 		return
 	}
 
-	box.SetOrientation(gtk.ORIENTATION_HORIZONTAL)
-
-	box.PackStart(lbl, false, false, 0)
-	box.PackStart(entry, true, true, 0)
+	dbox.PackStart(hbox, true, true, 0)
+	hbox.PackStart(lbl, false, false, 0)
+	hbox.PackStart(entry, true, true, 0)
 
 	dlg.ShowAll()
 
 	var res = dlg.Run()
 
 	switch res {
+	case gtk.RESPONSE_NONE:
+		fallthrough
+	case gtk.RESPONSE_DELETE_EVENT:
+		fallthrough
+	case gtk.RESPONSE_CLOSE:
+		fallthrough
 	case gtk.RESPONSE_CANCEL:
 		g.log.Println("[DEBUG] User changed their mind about adding a Tag. Fine with me.")
 	case gtk.RESPONSE_OK:
@@ -471,6 +500,9 @@ func (g *GUI) handleTagAdd() {
 
 		g.log.Printf("[DEBUG] User wants to add a Tag named %q\n",
 			name)
+	default:
+		g.log.Printf("[DEBUG] Well, I did NOT see this coming: %d\n",
+			res)
 	}
 
 } // func (g *GUI) handleTagAdd()
