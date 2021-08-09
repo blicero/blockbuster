@@ -2,13 +2,12 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 17:17:52 krylon>
+// Time-stamp: <2021-08-09 18:39:33 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -370,21 +369,81 @@ func (g *GUI) promptScanFolder() {
 } // func (g *GUI) promptScanFolder()
 
 func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
-	// g.log.Println("[TRACE] Baby, klick mich an, auf der Datenautobahn...")
-	var be = gdk.EventButtonNewFromEvent(evt)
-	var button string
 
-	switch be.Button() {
-	case gdk.BUTTON_PRIMARY:
-		button = "Left"
-	case gdk.BUTTON_MIDDLE:
-		button = "Middle"
-	case gdk.BUTTON_SECONDARY:
-		button = "Right"
-	default:
-		button = fmt.Sprintf("#%d", be.Button())
+	var be = gdk.EventButtonNewFromEvent(evt)
+
+	if be.Button() != gdk.BUTTON_SECONDARY {
+		return
 	}
 
-	g.log.Printf("[TRACE] %s Button was clicked.\n",
-		button)
+	var (
+		err    error
+		exists bool
+		x, y   float64
+		path   *gtk.TreePath
+		col    *gtk.TreeViewColumn
+		model  *gtk.TreeModel
+		imodel gtk.ITreeModel
+		iter   *gtk.TreeIter
+	)
+
+	x = be.X()
+	y = be.Y()
+
+	g.log.Printf("[TRACE] Right click at %f/%f\n",
+		x,
+		y)
+
+	path, col, _, _, exists = view.GetPathAtPos(int(x), int(y))
+
+	if !exists {
+		g.log.Printf("[DEBUG] There is no item at %f/%f\n",
+			x,
+			y)
+		return
+	}
+
+	g.log.Printf("[DEBUG] Handle Click at %f/%f -> Path %s\n",
+		x,
+		y,
+		path)
+
+	if imodel, err = view.GetModel(); err != nil {
+		g.log.Printf("[ERROR] Cannot get Model from View: %s\n",
+			err.Error())
+		return
+	}
+
+	model = imodel.ToTreeModel()
+
+	if iter, err = model.GetIter(path); err != nil {
+		g.log.Printf("[ERROR] Cannot get Iter from TreePath %s: %s\n",
+			path,
+			err.Error())
+		return
+	}
+
+	var title string = col.GetTitle()
+	g.log.Printf("[DEBUG] Column %s was clicked\n",
+		title)
+
+	// var val *glib.Value
+
+	// if val, err = model.GetValue(iter, cx); err != nil {
+	// 	g.log.Printf("[ERROR] Cannot get value for column %d: %s\n",
+	// 		cx,
+	// 		err.Error())
+	// 	return
+	// }
+
+	// var vstr string
+
+	// if vstr, err = val.GetString(); err != nil {
+	// 	g.log.Printf("[ERROR] Cannot get String value for clicked-on value: %s\n",
+	// 		err.Error())
+	// 	return
+	// }
+
+	// g.log.Printf("[DEBUG] Clicked-on value is %q\n",
+	// 	vstr)
 } // func (g *GUI) handleFileListClick()
