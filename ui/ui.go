@@ -2,12 +2,13 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 14:38:25 krylon>
+// Time-stamp: <2021-08-09 17:17:52 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"github.com/blicero/blockbuster/logdomain"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/blockbuster/tree"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -367,6 +369,22 @@ func (g *GUI) promptScanFolder() {
 
 } // func (g *GUI) promptScanFolder()
 
-func (g *GUI) handleFileListClick() {
-	g.log.Println("[TRACE] Baby, klick mich an, auf der Datenautobahn...")
+func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
+	// g.log.Println("[TRACE] Baby, klick mich an, auf der Datenautobahn...")
+	var be = gdk.EventButtonNewFromEvent(evt)
+	var button string
+
+	switch be.Button() {
+	case gdk.BUTTON_PRIMARY:
+		button = "Left"
+	case gdk.BUTTON_MIDDLE:
+		button = "Middle"
+	case gdk.BUTTON_SECONDARY:
+		button = "Right"
+	default:
+		button = fmt.Sprintf("#%d", be.Button())
+	}
+
+	g.log.Printf("[TRACE] %s Button was clicked.\n",
+		button)
 } // func (g *GUI) handleFileListClick()
