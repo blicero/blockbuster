@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 22:45:32 krylon>
+// Time-stamp: <2021-08-10 00:12:50 krylon>
 
 //go:generate stringer -type=ID
 
@@ -26,9 +26,10 @@ const (
 	FolderGetAll
 	FolderGetByPath
 	TagAdd
+	TagDelete
+	TagGetAll
 	TagGetByID
 	TagGetByName
-	TagDelete
 	TagLinkAdd
 	TagLinkDelete
 	TagLinkGetByTag
