@@ -268,18 +268,14 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 
 		if err = store.Set(
 			iter,
-			[]int{0},
-			[]interface{}{f.Path},
+			[]int{0, 1},
+			[]interface{}{f.ID, f.Path},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
 				f.ID,
 				f.Path,
 				err.Error())
-		} /*else {
-			g.log.Printf("[ERROR] makeNewFileHandler -- IMPLEMENT ME -- %8d -- %s\n",
-				f.ID,
-				f.Path)
-		}*/
+		}
 
 		return false
 	}
@@ -305,18 +301,14 @@ func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
 
 		if err = store.Set(
 			iter,
-			[]int{0},
-			[]interface{}{f.Path},
+			[]int{0, 1},
+			[]interface{}{f.ID, f.Path},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add FOlder %d (%s) to Store: %s\n",
 				f.ID,
 				f.Path,
 				err.Error())
-		} /*else {
-			g.log.Printf("[ERROR] makeNewFileHandler -- IMPLEMENT ME -- %8d -- %s\n",
-				f.ID,
-				f.Path)
-		}*/
+		}
 
 		return false
 	}

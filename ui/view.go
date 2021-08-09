@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 13:53:52 krylon>
+// Time-stamp: <2021-08-09 18:44:49 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -100,6 +100,10 @@ var viewList = []view{
 		store: storeList,
 		columns: []column{
 			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
+			column{
 				colType: glib.TYPE_STRING,
 				title:   "Path",
 			},
@@ -113,6 +117,10 @@ var viewList = []view{
 		title: "File",
 		store: storeList,
 		columns: []column{
+			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
 			column{
 				colType: glib.TYPE_STRING,
 				title:   "Title",
@@ -144,6 +152,10 @@ var viewList = []view{
 		store: storeTree,
 		columns: []column{
 			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
+			column{
 				colType: glib.TYPE_STRING,
 				title:   "Name",
 			},
@@ -161,6 +173,10 @@ var viewList = []view{
 		title: "Tags",
 		store: storeTree,
 		columns: []column{
+			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
 			column{
 				colType: glib.TYPE_STRING,
 				title:   "Name",
