@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 18:44:49 krylon>
+// Time-stamp: <2021-08-10 01:38:53 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -96,24 +96,6 @@ func (v *view) create() (gtk.ITreeModel, *gtk.TreeView, error) {
 
 var viewList = []view{
 	view{
-		title: "Folder",
-		store: storeList,
-		columns: []column{
-			column{
-				colType: glib.TYPE_INT,
-				title:   "ID",
-			},
-			column{
-				colType: glib.TYPE_STRING,
-				title:   "Path",
-			},
-			column{
-				colType: glib.TYPE_STRING,
-				title:   "Last Scan",
-			},
-		},
-	},
-	view{
 		title: "File",
 		store: storeList,
 		columns: []column{
@@ -188,6 +170,24 @@ var viewList = []view{
 			column{
 				colType: glib.TYPE_INT,
 				title:   "Year",
+			},
+		},
+	},
+	view{
+		title: "Folder",
+		store: storeList,
+		columns: []column{
+			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
+			column{
+				colType: glib.TYPE_STRING,
+				title:   "Path",
+			},
+			column{
+				colType: glib.TYPE_STRING,
+				title:   "Last Scan",
 			},
 		},
 	},
