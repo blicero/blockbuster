@@ -2,12 +2,13 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 20:51:20 krylon>
+// Time-stamp: <2021-08-10 01:28:52 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -478,7 +479,11 @@ func (g *GUI) handleTagAdd() {
 
 	dlg.ShowAll()
 
-	var res = dlg.Run()
+	var (
+		name string
+		t    *objects.Tag
+		res  = dlg.Run()
+	)
 
 	switch res {
 	case gtk.RESPONSE_NONE:
@@ -489,9 +494,8 @@ func (g *GUI) handleTagAdd() {
 		fallthrough
 	case gtk.RESPONSE_CANCEL:
 		g.log.Println("[DEBUG] User changed their mind about adding a Tag. Fine with me.")
+		return
 	case gtk.RESPONSE_OK:
-		var name string
-
 		if name, err = entry.GetText(); err != nil {
 			g.log.Printf("[ERROR] Cannot get Text from Dialog: %s\n",
 				err.Error())
@@ -505,4 +509,20 @@ func (g *GUI) handleTagAdd() {
 			res)
 	}
 
+	if t, err = g.db.TagAdd(name); err != nil {
+		var msg = fmt.Sprintf("Cannot add Tag %q to database: %s",
+			name,
+			err.Error())
+		g.log.Printf("[ERROR] %s\n",
+			msg)
+		g.displayMsg(msg)
+		return
+	} else if err = g.tagAdd(t); err != nil {
+		var msg = fmt.Sprintf("Cannot add Tag %s to UI: %s",
+			t.Name,
+			err.Error())
+		g.log.Printf("[ERROR] %s\n",
+			msg)
+		g.displayMsg(msg)
+	}
 } // func (g *GUI) handleTagAdd()
