@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 21:49:56 krylon>
+// Time-stamp: <2021-08-09 22:44:34 krylon>
 
 package database
 
@@ -12,6 +12,8 @@ var initQueries = []string{
     path          TEXT UNIQUE NOT NULL,
     last_scan     INTEGER NOT NULL DEFAULT 0
 )`,
+
+	"CREATE INDEX folder_path_idx ON folder (path)",
 
 	`
 CREATE TABLE file (

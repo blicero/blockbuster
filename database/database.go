@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 21:44:23 krylon>
+// Time-stamp: <2021-08-09 22:58:52 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1126,3 +1126,82 @@ EXEC_QUERY:
 
 	return nil, nil
 } // func (db *Database) FileGetByPath(path string) (*objects.File, error)
+
+func (db *Database) TagAdd(name string) (*objects.Tag, error) {
+	const qid query.ID = query.TagAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return nil, errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+	var res sql.Result
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(name); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Tag %s to database: %s",
+				name,
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return nil, err
+		}
+	} else {
+		var tagID int64
+
+		if tagID, err = res.LastInsertId(); err != nil {
+			db.log.Printf("[ERROR] Cannot get ID of new Feed %s: %s\n",
+				name,
+				err.Error())
+			return nil, err
+		}
+
+		status = true
+		return &objects.Tag{
+			ID:   tagID,
+			Name: name,
+		}, nil
+	}
+} // func (db *Database) TagAdd(name string) (*objects.Tag, error)
