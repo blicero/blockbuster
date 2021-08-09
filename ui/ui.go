@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-08 01:18:24 krylon>
+// Time-stamp: <2021-08-09 14:38:25 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -168,11 +168,19 @@ func Create() (*GUI, error) {
 
 	}
 
-	//g.tabs[0].view.Connect("clicked", g.handleFileListClick)
-	for i := 0; i < int(g.tabs[0].view.GetNColumns()); i++ {
-		var col = g.tabs[0].view.GetColumn(i)
+	g.tabs[tiFile].view.Connect("button-press-event", g.handleFileListClick)
+	for i := 0; i < int(g.tabs[tiFile].view.GetNColumns()); i++ {
+		var col = g.tabs[tiFile].view.GetColumn(i)
 
-		col.Connect("clicked", g.handleFileListClick)
+		col.SetClickable(true)
+		col.Connect("button-press-event", g.handleFileListClick)
+	}
+
+	g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
+	for i := 0; i < int(g.tabs[tiFolder].view.GetNColumns()); i++ {
+		var col = g.tabs[tiFolder].view.GetColumn(i)
+		col.SetClickable(true)
+		col.Connect("button-press-event", g.handleFileListClick)
 	}
 
 	g.win.Connect("destroy", gtk.MainQuit)
@@ -188,18 +196,30 @@ func Create() (*GUI, error) {
 // ShowAndRun displays the GUI and runs the Gtk event loop.
 func (g *GUI) ShowAndRun() {
 	var (
-		err  error
-		list []objects.File
+		err        error
+		fileList   []objects.File
+		folderList []objects.Folder
 	)
 
-	if list, err = g.db.FileGetAll(); err != nil {
+	if fileList, err = g.db.FileGetAll(); err != nil {
 		g.log.Printf("[ERROR] Cannot get list of all Files: %s\n",
 			err.Error())
 		return
 	}
 
-	for idx := range list {
-		var handler = g.makeNewFileHandler(&list[idx])
+	for idx := range fileList {
+		var handler = g.makeNewFileHandler(&fileList[idx])
+		glib.IdleAdd(handler)
+	}
+
+	if folderList, err = g.db.FolderGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot get list of all Folders: %s\n",
+			err.Error())
+		return
+	}
+
+	for idx := range folderList {
+		var handler = g.makeNewFolderHandler(&folderList[idx])
 		glib.IdleAdd(handler)
 	}
 
@@ -234,8 +254,8 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	case *gtk.ListStore:
 		store = t
 	default:
-		g.log.Printf("[CANTHAPPEN] Unexpected type for g.tabs[0].store: %T (expected *gtk.ListStore)\n",
-			g.tabs[0].store)
+		g.log.Printf("[CANTHAPPEN] Unexpected type for g.tabs[tiFile].store: %T (expected *gtk.ListStore)\n",
+			g.tabs[tiFile].store)
 		return func() bool { return false }
 	}
 
@@ -263,6 +283,43 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 		return false
 	}
 } // func (g *GUI) makeNewFileHandler(f *objects.File) func() bool
+
+func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
+	var store *gtk.ListStore
+
+	switch t := g.tabs[tiFolder].store.(type) {
+	case *gtk.ListStore:
+		store = t
+	default:
+		g.log.Printf("[CANTHAPPEN] Unexpected type for g.tabs[tiFolder].store: %T (expected *gtk.ListStore)\n",
+			g.tabs[tiFolder].store)
+		return func() bool { return false }
+	}
+
+	return func() bool {
+		var (
+			err  error
+			iter = store.Append()
+		)
+
+		if err = store.Set(
+			iter,
+			[]int{0},
+			[]interface{}{f.Path},
+		); err != nil {
+			g.log.Printf("[ERROR] Cannot add FOlder %d (%s) to Store: %s\n",
+				f.ID,
+				f.Path,
+				err.Error())
+		} /*else {
+			g.log.Printf("[ERROR] makeNewFileHandler -- IMPLEMENT ME -- %8d -- %s\n",
+				f.ID,
+				f.Path)
+		}*/
+
+		return false
+	}
+} // func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool
 
 func (g *GUI) promptScanFolder() {
 	g.log.Printf("[DEBUG] You scannin', or what?!\n")
