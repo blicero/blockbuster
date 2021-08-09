@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-08 01:27:40 krylon>
+# Time-stamp: <2021-08-09 17:18:39 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,21 +33,21 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-08 So 01:27]
+#+CAPTION: Clock summary at [2021-08-09 Mo 17:18]
 | Headline             | Time    |         |      |      |      |
 |----------------------+---------+---------+------+------+------|
-| *Total time*         | *21:09* |         |      |      |      |
+| *Total time*         | *21:15* |         |      |      |      |
 |----------------------+---------+---------+------+------+------|
-| *Blockbuster*        | *21:09* |         |      |      |      |
+| *Blockbuster*        | *21:15* |         |      |      |      |
 | \_  /Backend/        |         | /10:18/ |      |      |      |
 | \_    Database       |         |         | 8:24 |      |      |
 | \_      Schema       |         |         |      | 1:18 |      |
 | \_        Folders    |         |         |      |      | 1:18 |
 | \_    Scanner        |         |         | 1:54 |      |      |
 | \_      Folders      |         |         |      | 1:54 |      |
-| \_  /GUI/            |         | /10:51/ |      |      |      |
+| \_  /GUI/            |         | /10:57/ |      |      |      |
 | \_    Folders        |         |         | 0:25 |      |      |
-| \_    Menu           |         |         | 3:18 |      |      |
+| \_    Menu           |         |         | 3:24 |      |      |
 | \_    Initialization |         |         | 1:45 |      |      |
 #+END:
 ** Backend
@@ -96,6 +96,7 @@ applications as well, I am good to go. So let's do this!
     
 *** TODO Menu
     :LOGBOOK:
+    CLOCK: [2021-08-09 Mo 17:12]--[2021-08-09 Mo 17:18] =>  0:06
     CLOCK: [2021-08-06 Fr 20:30]--[2021-08-06 Fr 23:48] =>  3:18
     :END:
     As I _slowly_ recover my memories of Gtk2's way of doing menus, and try to
