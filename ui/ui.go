@@ -95,48 +95,11 @@ func Create() (*GUI, error) {
 		return nil, err
 	}
 
-	// FIXME I think I should somehow make the menu more data driven. Kinda like the TreeViews.
-
-	var (
-		fileMenu                   *gtk.Menu
-		scanItem, quitItem, fmItem *gtk.MenuItem
-	)
-
-	if fileMenu, err = gtk.MenuNew(); err != nil {
-		g.log.Printf("[ERROR] Cannot create File menu: %s\n",
-			err.Error())
-		return nil, err
-	} else if scanItem, err = gtk.MenuItemNewWithMnemonic("_Scan"); err != nil {
-		g.log.Printf("[ERROR] Cannot create menu item File/Scan: %s\n",
-			err.Error())
-		return nil, err
-	} else if quitItem, err = gtk.MenuItemNewWithMnemonic("_Quit"); err != nil {
-		g.log.Printf("[ERROR] Cannot create menu item File/Quit: %s\n",
-			err.Error())
-		return nil, err
-	} else if fmItem, err = gtk.MenuItemNewWithMnemonic("_File"); err != nil {
-		g.log.Printf("[ERROR] Cannot create menu item File/: %s\n",
+	if err = g.initMenu(); err != nil {
+		g.log.Printf("[ERROR] Failed to create menu: %s\n",
 			err.Error())
 		return nil, err
 	}
-
-	////////////////////////////////////////////////////////////////////////////////
-	///// Context Menus ////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////
-
-	// One thing I really liked about the old Ruby application was that I
-	// had sensible context menus, so I could right-click any object in a
-	// tree view and get a meaningful list of things to do.
-
-	scanItem.Connect("activate", g.promptScanFolder)
-	quitItem.Connect("activate", gtk.MainQuit)
-
-	fmItem.SetSubmenu(fileMenu)
-
-	fileMenu.Append(scanItem)
-	fileMenu.Append(quitItem)
-
-	g.menubar.Append(fmItem)
 
 	g.tabs = make([]tabContent, len(viewList))
 

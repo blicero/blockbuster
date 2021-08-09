@@ -1,0 +1,85 @@
+// /home/krylon/go/src/github.com/blicero/blockbuster/ui/menu.go
+// -*- mode: go; coding: utf-8; -*-
+// Created on 09. 08. 2021 by Benjamin Walkenhorst
+// (c) 2021 Benjamin Walkenhorst
+// Time-stamp: <2021-08-09 19:44:54 krylon>
+
+package ui
+
+import (
+	"github.com/gotk3/gotk3/gtk"
+)
+
+// Creating the menu is so tedious and verbose I am putting that part into a
+// separate file.
+
+func (g *GUI) initMenu() error {
+	///////////////////////////////////////////////////////////////////////
+	////// Menus //////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+
+	// FIXME I think I should somehow make the menu more data driven. Kinda like the TreeViews.
+
+	var (
+		err                               error
+		fileMenu, addMenu                 *gtk.Menu
+		scanItem, quitItem, fmItem        *gtk.MenuItem
+		itemAddTag, itemAddPerson, amItem *gtk.MenuItem
+	)
+
+	if fileMenu, err = gtk.MenuNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create File menu: %s\n",
+			err.Error())
+		return err
+	} else if scanItem, err = gtk.MenuItemNewWithMnemonic("_Scan"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/Scan: %s\n",
+			err.Error())
+		return err
+	} else if quitItem, err = gtk.MenuItemNewWithMnemonic("_Quit"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/Quit: %s\n",
+			err.Error())
+		return err
+	} else if fmItem, err = gtk.MenuItemNewWithMnemonic("_File"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/: %s\n",
+			err.Error())
+		return err
+	}
+
+	if addMenu, err = gtk.MenuNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Add menu: %s\n",
+			err.Error())
+		return err
+	} else if itemAddTag, err = gtk.MenuItemNewWithMnemonic("_Tag"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item Add/Tag: %s\n",
+			err.Error())
+		return err
+	} else if itemAddPerson, err = gtk.MenuItemNewWithMnemonic("_Person"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item Add/Person: %s\n",
+			err.Error())
+		return err
+	} else if amItem, err = gtk.MenuItemNewWithMnemonic("_Add"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu Item Add/: %s\n",
+			err.Error())
+		return err
+	}
+
+	scanItem.Connect("activate", g.promptScanFolder)
+	quitItem.Connect("activate", gtk.MainQuit)
+
+	fmItem.SetSubmenu(fileMenu)
+
+	fileMenu.Append(scanItem)
+	fileMenu.Append(quitItem)
+
+	g.menubar.Append(fmItem)
+
+	amItem.SetSubmenu(addMenu)
+	addMenu.Append(itemAddTag)
+	addMenu.Append(itemAddPerson)
+
+	itemAddTag.Connect("activate", g.handleTagAdd)
+
+	g.menubar.Append(amItem)
+
+	return nil
+} // func (g *GUI) initMenu() error
