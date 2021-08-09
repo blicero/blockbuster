@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 18:39:33 krylon>
+// Time-stamp: <2021-08-09 19:47:41 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -132,20 +132,16 @@ func Create() (*GUI, error) {
 
 	}
 
+	////////////////////////////////////////////////////////////////////////////////
+	///// Context Menus ////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////
+
+	// One thing I really liked about the old Ruby application was that I
+	// had sensible context menus, so I could right-click any object in a
+	// tree view and get a meaningful list of things to do.
+
 	g.tabs[tiFile].view.Connect("button-press-event", g.handleFileListClick)
-	for i := 0; i < int(g.tabs[tiFile].view.GetNColumns()); i++ {
-		var col = g.tabs[tiFile].view.GetColumn(i)
-
-		col.SetClickable(true)
-		col.Connect("button-press-event", g.handleFileListClick)
-	}
-
-	g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
-	for i := 0; i < int(g.tabs[tiFolder].view.GetNColumns()); i++ {
-		var col = g.tabs[tiFolder].view.GetColumn(i)
-		col.SetClickable(true)
-		col.Connect("button-press-event", g.handleFileListClick)
-	}
+	// g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
 
 	g.win.Connect("destroy", gtk.MainQuit)
 
@@ -382,23 +378,99 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 	g.log.Printf("[DEBUG] Column %s was clicked\n",
 		title)
 
-	// var val *glib.Value
+	var (
+		val *glib.Value
+		gv  interface{}
+		id  int64
+	)
 
-	// if val, err = model.GetValue(iter, cx); err != nil {
-	// 	g.log.Printf("[ERROR] Cannot get value for column %d: %s\n",
-	// 		cx,
-	// 		err.Error())
-	// 	return
-	// }
+	if val, err = model.GetValue(iter, 0); err != nil {
+		g.log.Printf("[ERROR] Cannot get value for column 0: %s\n",
+			err.Error())
+		return
+	} else if gv, err = val.GoValue(); err != nil {
+		g.log.Printf("[ERROR] Cannot get Go value from GLib value: %s\n",
+			err.Error())
+	}
 
-	// var vstr string
+	switch v := gv.(type) {
+	case int:
+		id = int64(v)
+	case int64:
+		id = v
+	default:
+		g.log.Printf("[ERROR] Unexpected type for ID column: %T\n",
+			v)
+	}
 
-	// if vstr, err = val.GetString(); err != nil {
-	// 	g.log.Printf("[ERROR] Cannot get String value for clicked-on value: %s\n",
-	// 		err.Error())
-	// 	return
-	// }
-
-	// g.log.Printf("[DEBUG] Clicked-on value is %q\n",
-	// 	vstr)
+	g.log.Printf("[DEBUG] ID of clicked-on row is %d\n",
+		id)
 } // func (g *GUI) handleFileListClick()
+
+func (g *GUI) handleTagAdd() {
+	var (
+		err   error
+		dlg   *gtk.Dialog
+		box   *gtk.Box
+		lbl   *gtk.Label
+		entry *gtk.Entry
+	)
+
+	if dlg, err = gtk.DialogNewWithButtons(
+		"Add Tag",
+		g.win,
+		gtk.DIALOG_MODAL,
+		[]interface{}{
+			"Cancel",
+			gtk.RESPONSE_CANCEL,
+			"OK",
+			gtk.RESPONSE_OK,
+		},
+	); err != nil {
+		g.log.Printf("Error creating gtk.Dialog: %s\n",
+			err.Error())
+		return
+	}
+
+	defer dlg.Close()
+
+	if lbl, err = gtk.LabelNew("Name:"); err != nil {
+		g.log.Printf("[ERROR] Cannot create Label for AddTag Dialog: %s\n",
+			err.Error())
+		return
+	} else if entry, err = gtk.EntryNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Entry for AddTag Dialog: %s\n",
+			err.Error())
+		return
+	} else if box, err = dlg.GetContentArea(); err != nil {
+		g.log.Printf("[ERROR] Cannot get ContentArea of AddTag Dialog: %s\n",
+			err.Error())
+		return
+	}
+
+	box.SetOrientation(gtk.ORIENTATION_HORIZONTAL)
+
+	box.PackStart(lbl, false, false, 0)
+	box.PackStart(entry, true, true, 0)
+
+	dlg.ShowAll()
+
+	var res = dlg.Run()
+
+	switch res {
+	case gtk.RESPONSE_CANCEL:
+		g.log.Println("[DEBUG] User changed their mind about adding a Tag. Fine with me.")
+	case gtk.RESPONSE_OK:
+		var name string
+
+		if name, err = entry.GetText(); err != nil {
+			g.log.Printf("[ERROR] Cannot get Text from Dialog: %s\n",
+				err.Error())
+			return
+		}
+
+		g.log.Printf("[DEBUG] User wants to add a Tag named %q\n",
+			name)
+	}
+
+} // func (g *GUI) handleTagAdd()
