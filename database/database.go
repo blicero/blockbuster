@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 18:15:01 krylon>
+// Time-stamp: <2021-08-12 00:43:01 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1442,7 +1442,7 @@ EXEC_QUERY:
 
 // TagLinkDelete removes the link between the given Tag and File.
 func (db *Database) TagLinkDelete(f *objects.File, t *objects.Tag) error {
-	const qid query.ID = query.TagLinkAdd
+	const qid query.ID = query.TagLinkDelete
 	var (
 		err    error
 		msg    string

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 23:18:21 krylon>
+// Time-stamp: <2021-08-12 00:39:38 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -231,13 +232,35 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	return func() bool {
 		var (
 			err  error
+			tstr string
 			iter = store.Append()
 		)
 
+		if f.ID != 0 {
+			var (
+				tags  map[int64]objects.Tag
+				tlist []string
+			)
+
+			if tags, err = g.db.TagLinkGetByFile(f); err != nil {
+				g.log.Printf("[ERROR] Cannot get Tags for File %s: %s\n",
+					f.DisplayTitle(),
+					err.Error())
+			} else {
+				tlist = make([]string, 0, len(tags))
+				for _, t := range tags {
+					tlist = append(tlist, t.Name)
+				}
+
+				sort.Strings(tlist)
+				tstr = strings.Join(tlist, ", ")
+			}
+		}
+
 		if err = store.Set(
 			iter,
-			[]int{0, 1},
-			[]interface{}{f.ID, f.Path},
+			[]int{0, 1, 6},
+			[]interface{}{f.ID, f.Path, tstr},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
 				f.ID,

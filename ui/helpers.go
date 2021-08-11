@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-10 01:04:37 krylon>
+// Time-stamp: <2021-08-12 01:05:15 krylon>
 
 package ui
 
@@ -60,6 +60,6 @@ func (g *GUI) displayMsg(msg string) {
 	}
 
 	box.PackStart(lbl, true, true, 0)
-	dlg.ShowAll()
+	// dlg.ShowAll()
 	dlg.Run()
 } // func (g *GUI) displayMsg(msg string)

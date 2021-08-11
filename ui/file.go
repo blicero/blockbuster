@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 23:20:47 krylon>
+// Time-stamp: <2021-08-12 00:58:26 krylon>
 
 package ui
 
@@ -35,7 +35,6 @@ func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, err
 		goto ERROR
 	}
 
-	// TODO Register handlers!
 	for idx, t := range g.tags {
 		var (
 			tagged bool
@@ -53,6 +52,8 @@ func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, err
 
 		if !tagged {
 			item.Connect("activate", g.mkFileTagAddHandler(path, f, &g.tags[idx]))
+		} else {
+			item.Connect("activate", g.mkFileTagDelHandler(path, f, &g.tags[idx]))
 		}
 
 		item.SetActive(tagged)
@@ -91,7 +92,33 @@ func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *object
 		g.log.Printf("[ERROR] %s\n", msg)
 		g.displayMsg(msg)
 	}
-} // func (g *GUI) fileTagAdd(path *gtk.TreePath, f *objects.File, t *objects.Tag)
+} // func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
+
+func (g *GUI) mkFileTagDelHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func() {
+	return func() {
+		var (
+			err error
+			msg string
+		)
+
+		if err = g.db.TagLinkDelete(f, t); err != nil {
+			msg = fmt.Sprintf("Cannot unlink Tag %s from File %s: %s",
+				t.Name,
+				f.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		// TODO Update ListStore!!!
+		glib.IdleAdd(g.mkFileTagListUpdater(path, f))
+
+		return
+
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) mkFileTagDelHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
 
 func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() bool {
 	return func() bool {
