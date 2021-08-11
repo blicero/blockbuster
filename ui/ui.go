@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 18:35:58 krylon>
+// Time-stamp: <2021-08-11 23:18:21 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -427,7 +427,7 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 		msg = fmt.Sprintf("Cannot create context menu: %s",
 			err.Error())
 		goto ERROR
-	} else if tagMenu, err = g.mkFileTagMenu(f); err != nil {
+	} else if tagMenu, err = g.mkFileTagMenu(path, f); err != nil {
 		msg = fmt.Sprintf("Cannot create submenu Tag: %s",
 			err.Error())
 		goto ERROR
