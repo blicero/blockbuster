@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-10 01:28:52 krylon>
+// Time-stamp: <2021-08-11 18:35:58 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -10,6 +10,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 	"time"
 
@@ -52,6 +53,7 @@ type GUI struct {
 	menubar  *gtk.MenuBar
 	notebook *gtk.Notebook
 	tabs     []tabContent
+	tags     objects.TagList
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
@@ -74,7 +76,13 @@ func Create() (*GUI, error) {
 		g.log.Printf("[ERROR] Cannot create Scanner: %s\n",
 			err.Error())
 		return nil, err
+	} else if g.tags, err = g.db.TagGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot fetch all Tags from Database: %s\n",
+			err.Error())
+		return nil, err
 	}
+
+	sort.Sort(g.tags)
 
 	gtk.Init(nil)
 
@@ -321,7 +329,6 @@ func (g *GUI) promptScanFolder() {
 } // func (g *GUI) promptScanFolder()
 
 func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
-
 	var be = gdk.EventButtonNewFromEvent(evt)
 
 	if be.Button() != gdk.BUTTON_SECONDARY {
@@ -330,6 +337,7 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 
 	var (
 		err    error
+		msg    string
 		exists bool
 		x, y   float64
 		path   *gtk.TreePath
@@ -341,10 +349,6 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 
 	x = be.X()
 	y = be.Y()
-
-	g.log.Printf("[TRACE] Right click at %f/%f\n",
-		x,
-		y)
 
 	path, col, _, _, exists = view.GetPathAtPos(int(x), int(y))
 
@@ -406,7 +410,56 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 
 	g.log.Printf("[DEBUG] ID of clicked-on row is %d\n",
 		id)
-} // func (g *GUI) handleFileListClick()
+
+	var (
+		f                    *objects.File
+		contextMenu, tagMenu *gtk.Menu
+		tagItem, playItem    *gtk.MenuItem
+		hideItem             *gtk.CheckMenuItem
+	)
+
+	if f, err = g.db.FileGetByID(id); err != nil {
+		msg = fmt.Sprintf("Cannot look up File #%d: %s",
+			id,
+			err.Error())
+		goto ERROR
+	} else if contextMenu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu: %s",
+			err.Error())
+		goto ERROR
+	} else if tagMenu, err = g.mkFileTagMenu(f); err != nil {
+		msg = fmt.Sprintf("Cannot create submenu Tag: %s",
+			err.Error())
+		goto ERROR
+	} else if tagItem, err = gtk.MenuItemNewWithMnemonic("_Tag"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Tag: %s",
+			err.Error())
+		goto ERROR
+	} else if hideItem, err = gtk.CheckMenuItemNewWithLabel("Hide"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Hide: %s",
+			err.Error())
+		goto ERROR
+	} else if playItem, err = gtk.MenuItemNewWithMnemonic("_Play"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Play: %s",
+			err.Error())
+		goto ERROR
+	}
+
+	tagItem.SetSubmenu(tagMenu)
+
+	contextMenu.Append(tagItem)
+	contextMenu.Append(hideItem)
+	contextMenu.Append(playItem)
+
+	contextMenu.ShowAll()
+
+	contextMenu.PopupAtPointer(evt)
+
+	return
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+} // func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event)
 
 func (g *GUI) handleTagAdd() {
 	var (

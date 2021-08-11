@@ -2,11 +2,13 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 10. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-10 01:26:59 krylon>
+// Time-stamp: <2021-08-11 17:14:12 krylon>
 
 package ui
 
 import (
+	"sort"
+
 	"github.com/blicero/blockbuster/objects"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -33,6 +35,9 @@ func (g *GUI) tagAdd(t *objects.Tag) error {
 			err.Error())
 		return err
 	}
+
+	g.tags = append(g.tags, *t)
+	sort.Sort(g.tags)
 
 	return nil
 } // func (g *GUI) tagAdd(t *objects.Tag) error
