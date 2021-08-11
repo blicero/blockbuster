@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-11 23:22:46 krylon>
+# Time-stamp: <2021-08-12 01:11:11 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,12 +33,12 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-11 Mi 23:22]
+#+CAPTION: Clock summary at [2021-08-12 Do 01:11]
 | Headline             | Time      |         |       |      |      |
 |----------------------+-----------+---------+-------+------+------|
-| *Total time*         | *1d 7:48* |         |       |      |      |
+| *Total time*         | *1d 8:45* |         |       |      |      |
 |----------------------+-----------+---------+-------+------+------|
-| *Blockbuster*        | *1d 7:48* |         |       |      |      |
+| *Blockbuster*        | *1d 8:45* |         |       |      |      |
 | \_  /Backend/        |           | /14:55/ |       |      |      |
 | \_    Database       |           |         | 13:01 |      |      |
 | \_      Tags         |           |         |       | 1:31 |      |
@@ -46,10 +46,10 @@ applications as well, I am good to go. So let's do this!
 | \_        Folders    |           |         |       |      | 1:18 |
 | \_    Scanner        |           |         |  1:54 |      |      |
 | \_      Folders      |           |         |       | 1:54 |      |
-| \_  /GUI/            |           | /16:53/ |       |      |      |
+| \_  /GUI/            |           | /17:50/ |       |      |      |
 | \_    Folders        |           |         |  0:25 |      |      |
-| \_    Files [0/3]    |           |         |  2:56 |      |      |
-| \_      Tagging      |           |         |       | 2:56 |      |
+| \_    Files [0/3]    |           |         |  3:53 |      |      |
+| \_      Tagging      |           |         |       | 3:53 |      |
 | \_    Dialog         |           |         |  0:27 |      |      |
 | \_    Menu           |           |         |  5:57 |      |      |
 | \_    Initialization |           |         |  1:45 |      |      |
@@ -110,6 +110,7 @@ applications as well, I am good to go. So let's do this!
 *** Files [0/3]
 **** TODO Tagging
      :LOGBOOK:
+     CLOCK: [2021-08-12 Do 00:14]--[2021-08-12 Do 01:11] =>  0:57
      CLOCK: [2021-08-11 Mi 22:58]--[2021-08-11 Mi 23:22] =>  0:24
      CLOCK: [2021-08-11 Mi 21:55]--[2021-08-11 Mi 22:26] =>  0:31
      CLOCK: [2021-08-11 Mi 19:38]--[2021-08-11 Mi 20:59] =>  1:21
