@@ -2,9 +2,11 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-07 21:35:08 krylon>
+// Time-stamp: <2021-08-11 18:13:18 krylon>
 
 package objects
+
+import "path"
 
 // File represents a simple video file.
 type File struct {
@@ -13,4 +15,15 @@ type File struct {
 	Path     string
 	Title    string
 	Year     int64
+	Hidden   bool
 }
+
+// DisplayTitle returns the File's Title, or its basename,
+// if the Title is not set.
+func (f *File) DisplayTitle() string {
+	if f.Title != "" {
+		return f.Title
+	}
+
+	return path.Base(f.Path)
+} // func (f *File) DisplayTitle() string

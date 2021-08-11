@@ -22,6 +22,7 @@ CREATE TABLE file (
     path TEXT UNIQUE NOT NULL,
     title TEXT NOT NULL DEFAULT '',
     year INTEGER NOT NULL DEFAULT 0,
+    hidden INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (folder_id) REFERENCES folder (id)
        ON DELETE RESTRICT
        ON UPDATE RESTRICT
@@ -29,12 +30,13 @@ CREATE TABLE file (
 
 	"CREATE INDEX file_path_idx ON file (path)",
 	"CREATE INDEX file_title_idx ON file (title)",
+	"CREATE INDEX file_hidden_idx ON file (hidden)",
 
 	`
 CREATE TABLE person (
     id INTEGER PRIMARY KEY,
     name TEXT UNIQUE NOT NULL,
-    year_born INTEGER NOT NULL DEFAULT 0,
+    birthday INTEGER NOT NULL DEFAULT 0,
     UNIQUE (name)
 )`,
 

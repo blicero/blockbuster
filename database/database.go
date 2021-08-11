@@ -1127,6 +1127,53 @@ EXEC_QUERY:
 	return nil, nil
 } // func (db *Database) FileGetByPath(path string) (*objects.File, error)
 
+// FileGetByID loads a File by its ID.
+func (db *Database) FileGetByID(id int64) (*objects.File, error) {
+	const qid query.ID = query.FileGetByID
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(id); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	if rows.Next() {
+		var (
+			f = &objects.File{ID: id}
+		)
+
+		if err = rows.Scan(&f.FolderID, &f.Path, &f.Title, &f.Year, &f.Hidden); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		return f, nil
+	}
+
+	return nil, nil
+} // func (db *Database) FileGetByID(id int64) (*objects.File, error)
+
 // TagAdd adds a new Tag to the Database.
 func (db *Database) TagAdd(name string) (*objects.Tag, error) {
 	const qid query.ID = query.TagAdd
