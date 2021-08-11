@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 18:16:54 krylon>
+// Time-stamp: <2021-08-11 18:33:51 krylon>
 
 package database
 
@@ -88,7 +88,7 @@ CREATE TABLE tag (
 
 	"CREATE INDEX tag_name_idx ON tag (name)",
 
-	`CREATE TABLE file_tag_link (
+	`CREATE TABLE tag_link (
     id INTEGER PRIMARY KEY,
     file_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
@@ -101,6 +101,6 @@ CREATE TABLE tag (
         ON UPDATE RESTRICT
 )`,
 
-	"CREATE INDEX file_tag_link_file_idx ON file_tag_link (file_id)",
-	"CREATE INDEX file_tag_link_tag_idx ON file_tag_link (tag_id)",
+	"CREATE INDEX file_tag_link_file_idx ON tag_link (file_id)",
+	"CREATE INDEX file_tag_link_tag_idx ON tag_link (tag_id)",
 }
