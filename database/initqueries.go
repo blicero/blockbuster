@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 22:44:34 krylon>
+// Time-stamp: <2021-08-11 18:16:54 krylon>
 
 package database
 
@@ -54,6 +54,20 @@ CREATE TABLE person_url (
 )`,
 
 	"CREATE INDEX person_url_person_idx ON person_url (person_id)",
+
+	`
+CREATE TABLE actor (
+    id		INTEGER PRIMARY KEY,
+    file_id	INTEGER NOT NULL,
+    person_id	INTEGER NOT NULL,
+    UNIQUE (file_id, person_id),
+    FOREIGN KEY (file_id) REFERENCES file (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+)
+`,
+	"CREATE INDEX actor_file_idx ON actor (file_id)",
+	"CREATE INDEX actor_person_idx ON actor (person_id)",
 
 	`
 CREATE TABLE file_url (
