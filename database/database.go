@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-10 00:41:26 krylon>
+// Time-stamp: <2021-08-11 18:15:01 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1061,7 +1061,7 @@ EXEC_QUERY:
 			year  *int64
 		)
 
-		if err = rows.Scan(&f.ID, &f.FolderID, &f.Path, &title, &year); err != nil {
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Path, &title, &year, &f.Hidden); err != nil {
 			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
 			return nil, err
 		}
@@ -1116,7 +1116,7 @@ EXEC_QUERY:
 			f = &objects.File{Path: path}
 		)
 
-		if err = rows.Scan(&f.ID, &f.FolderID, &f.Title, &f.Year); err != nil {
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Title, &f.Year, &f.Hidden); err != nil {
 			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
 			return nil, err
 		}
@@ -1371,3 +1371,237 @@ EXEC_QUERY:
 
 	return list, nil
 } // func (db *Database) TagGetAll() ([]objects.Tag, error)
+
+// TagLinkAdd links the given Tag to the given File
+func (db *Database) TagLinkAdd(f *objects.File, t *objects.Tag) error {
+	const qid query.ID = query.TagLinkAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, t.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Tag %s to File %s: %s",
+				t.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) TagLinkAdd(f *objects.File, t *objects.Tag) error
+
+// TagLinkDelete removes the link between the given Tag and File.
+func (db *Database) TagLinkDelete(f *objects.File, t *objects.Tag) error {
+	const qid query.ID = query.TagLinkAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, t.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot remove link of Tag %s to File %s: %s",
+				t.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) TagLinkDelete(f *objects.File, t *objects.Tag) error
+
+// TagLinkGetByTag fetches all Files linked to the given Tag.
+func (db *Database) TagLinkGetByTag(t *objects.Tag) ([]objects.File, error) {
+	const qid query.ID = query.TagLinkGetByTag
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(t.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var files = make([]objects.File, 0, 10)
+
+	for rows.Next() {
+		var (
+			f objects.File
+		)
+
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Path, &f.Title, &f.Year); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		files = append(files, f)
+	}
+
+	return files, nil
+} // func (db *Database) TagLinkGetByTag(t *objects.Tag) ([]objects.File, error)
+
+// TagLinkGetByFile loads all Tags linked to the given File.
+func (db *Database) TagLinkGetByFile(f *objects.File) (map[int64]objects.Tag, error) {
+	const qid query.ID = query.TagLinkGetByFile
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(f.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var tags = make(map[int64]objects.Tag)
+
+	for rows.Next() {
+		var (
+			t objects.Tag
+		)
+
+		if err = rows.Scan(&t.ID, &t.Name); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		tags[t.ID] = t
+	}
+
+	return tags, nil
+} // func (db *Database) TagLinkGetByFile(f *objects.File) (map[int64]objects.Tag, error)
