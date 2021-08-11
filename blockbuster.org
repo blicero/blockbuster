@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-10 01:41:35 krylon>
+# Time-stamp: <2021-08-11 18:37:12 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,21 +33,23 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-10 Di 01:41]
+#+CAPTION: Clock summary at [2021-08-11 Mi 18:37]
 | Headline             | Time      |         |       |      |      |
 |----------------------+-----------+---------+-------+------+------|
-| *Total time*         | *1d 2:25* |         |       |      |      |
+| *Total time*         | *1d 5:31* |         |       |      |      |
 |----------------------+-----------+---------+-------+------+------|
-| *Blockbuster*        | *1d 2:25* |         |       |      |      |
-| \_  /Backend/        |           | /12:28/ |       |      |      |
-| \_    Database       |           |         | 10:34 |      |      |
+| *Blockbuster*        | *1d 5:31* |         |       |      |      |
+| \_  /Backend/        |           | /14:55/ |       |      |      |
+| \_    Database       |           |         | 13:01 |      |      |
 | \_      Tags         |           |         |       | 1:31 |      |
 | \_      Schema       |           |         |       | 1:18 |      |
 | \_        Folders    |           |         |       |      | 1:18 |
 | \_    Scanner        |           |         |  1:54 |      |      |
 | \_      Folders      |           |         |       | 1:54 |      |
-| \_  /GUI/            |           | /13:57/ |       |      |      |
+| \_  /GUI/            |           | /14:36/ |       |      |      |
 | \_    Folders        |           |         |  0:25 |      |      |
+| \_    Files [0/3]    |           |         |  0:39 |      |      |
+| \_      Tagging      |           |         |       | 0:39 |      |
 | \_    Dialog         |           |         |  0:27 |      |      |
 | \_    Menu           |           |         |  5:57 |      |      |
 | \_    Initialization |           |         |  1:45 |      |      |
@@ -55,6 +57,9 @@ applications as well, I am good to go. So let's do this!
 ** Backend
 *** Database
     :LOGBOOK:
+    CLOCK: [2021-08-11 Mi 18:12]--[2021-08-11 Mi 18:36] =>  0:24
+    CLOCK: [2021-08-11 Mi 16:59]--[2021-08-11 Mi 17:32] =>  0:33
+    CLOCK: [2021-08-10 Di 18:24]--[2021-08-10 Di 19:54] =>  1:30
     CLOCK: [2021-08-09 Mo 22:42]--[2021-08-09 Mo 23:21] =>  0:39
     CLOCK: [2021-08-05 Do 18:13]--[2021-08-05 Do 21:41] =>  3:28
     CLOCK: [2021-08-05 Do 14:14]--[2021-08-05 Do 14:41] =>  0:27
@@ -102,13 +107,22 @@ applications as well, I am good to go. So let's do this!
     :LOGBOOK:
     CLOCK: [2021-08-07 Sa 19:23]--[2021-08-07 Sa 19:48] =>  0:25
     :END:
+*** Files [0/3]
+**** TODO Tagging
+     :LOGBOOK:
+     CLOCK: [2021-08-11 Mi 18:36]--[2021-08-11 Mi 18:37] =>  0:01
+     CLOCK: [2021-08-11 Mi 17:34]--[2021-08-11 Mi 18:12] =>  0:38
+     :END:
+**** TODO Actors
+**** TODO Editing Metadata
 *** DONE Dialog
     CLOSED: [2021-08-09 Mo 20:53]
     :LOGBOOK:
     CLOCK: [2021-08-09 Mo 20:25]--[2021-08-09 Mo 20:52] =>  0:27
     :END:
     This is all so very tedious.
-*** TODO Menu
+*** DONE Menu
+    CLOSED: [2021-08-11 Mi 17:33]
     :LOGBOOK:
     CLOCK: [2021-08-09 Mo 17:20]--[2021-08-09 Mo 19:53] =>  2:33
     CLOCK: [2021-08-09 Mo 17:12]--[2021-08-09 Mo 17:18] =>  0:06
