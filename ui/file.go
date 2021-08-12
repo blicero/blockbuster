@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 00:58:26 krylon>
+// Time-stamp: <2021-08-12 17:24:16 krylon>
 
 package ui
 
@@ -50,13 +50,8 @@ func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, err
 			goto ERROR
 		}
 
-		if !tagged {
-			item.Connect("activate", g.mkFileTagAddHandler(path, f, &g.tags[idx]))
-		} else {
-			item.Connect("activate", g.mkFileTagDelHandler(path, f, &g.tags[idx]))
-		}
-
 		item.SetActive(tagged)
+		item.Connect("activate", g.mkFileTagToggleHandler(path, tagged, f, &g.tags[idx]))
 		menu.Append(item)
 	}
 
@@ -68,22 +63,29 @@ ERROR:
 	return nil, err
 } // func (g *GUI) mkFileTagMenu(f *objects.File) (*gtk.Menu, error)
 
-func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func() {
+func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects.File, t *objects.Tag) func() {
 	return func() {
 		var (
 			err error
 			msg string
 		)
 
-		if err = g.db.TagLinkAdd(f, t); err != nil {
-			msg = fmt.Sprintf("Cannot link Tag %s to File %s: %s",
+		if !tagged {
+			if err = g.db.TagLinkAdd(f, t); err != nil {
+				msg = fmt.Sprintf("Cannot link Tag %s to File %s: %s",
+					t.Name,
+					f.DisplayTitle(),
+					err.Error())
+				goto ERROR
+			}
+		} else if err = g.db.TagLinkDelete(f, t); err != nil {
+			msg = fmt.Sprintf("Cannot unlink Tag %s from File %s: %s",
 				t.Name,
 				f.DisplayTitle(),
 				err.Error())
 			goto ERROR
 		}
 
-		// TODO Update ListStore!!!
 		glib.IdleAdd(g.mkFileTagListUpdater(path, f))
 
 		return
@@ -93,32 +95,6 @@ func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *object
 		g.displayMsg(msg)
 	}
 } // func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
-
-func (g *GUI) mkFileTagDelHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func() {
-	return func() {
-		var (
-			err error
-			msg string
-		)
-
-		if err = g.db.TagLinkDelete(f, t); err != nil {
-			msg = fmt.Sprintf("Cannot unlink Tag %s from File %s: %s",
-				t.Name,
-				f.DisplayTitle(),
-				err.Error())
-			goto ERROR
-		}
-
-		// TODO Update ListStore!!!
-		glib.IdleAdd(g.mkFileTagListUpdater(path, f))
-
-		return
-
-	ERROR:
-		g.log.Printf("[ERROR] %s\n", msg)
-		g.displayMsg(msg)
-	}
-} // func (g *GUI) mkFileTagDelHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
 
 func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() bool {
 	return func() bool {
