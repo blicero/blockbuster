@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-04 11:50:04 krylon>
+// Time-stamp: <2021-08-12 18:05:39 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -35,7 +35,7 @@ import (
 // application.
 const (
 	AppName                  = "Blockbuster"
-	Version                  = "0.0.1"
+	Version                  = "0.0.2"
 	Debug                    = true
 	TimestampFormatMinute    = "2006-01-02 15:04"
 	TimestampFormat          = "2006-01-02 15:04:05"
