@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 18:12:10 krylon>
+// Time-stamp: <2021-08-12 19:06:46 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1694,7 +1694,7 @@ EXEC_QUERY:
 			Birthday: birthday,
 		}, nil
 	}
-} // func PersonAdd(name string, birthday time.Time) (*objects.Person, error)
+} // func (db *Database) PersonAdd(name string, birthday time.Time) (*objects.Person, error)
 
 // PersonGetAll loads all Persons from the Database, in no particular order.
 func (db *Database) PersonGetAll() ([]objects.Person, error) {
@@ -1800,4 +1800,243 @@ EXEC_QUERY:
 	}
 
 	return nil, nil
-} // func PersonGetByID(id int64) (*objects.Person, error)
+} // func (db *Database) PersonGetByID(id int64) (*objects.Person, error)
+
+// ActorAdd adds a Person to a File as an actor/actress.
+func (db *Database) ActorAdd(f *objects.File, p *objects.Person) error {
+	const qid query.ID = query.ActorAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Actor %s to Film %s: %s",
+				p.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) ActorAdd(f *objects.File, p *objects.Person) error
+
+// ActorDelete removes a Person from a Files "acting credits".
+func (db *Database) ActorDelete(f *objects.File, p *objects.Person) error {
+	const qid query.ID = query.ActorDelete
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot remove Actor %s from Film %s: %s",
+				p.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) ActorDelete(f *objects.File, p *objects.Person) error
+
+// ActorGetByPerson gets all the Files the given Person has acted in.
+func (db *Database) ActorGetByPerson(p *objects.Person) ([]objects.File, error) {
+	const qid query.ID = query.ActorGetByPerson
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var files = make([]objects.File, 0, 10)
+
+	for rows.Next() {
+		var (
+			f objects.File
+		)
+
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Path, &f.Title, &f.Year); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		files = append(files, f)
+	}
+
+	return files, nil
+} // func (db *Database) ActorGetByPerson(p *objects.Person) ([]objects.File, error)
+
+// ActorGetByFile gets all the People that have acted in the given File.
+func (db *Database) ActorGetByFile(f *objects.File) ([]objects.Person, error) {
+	const qid query.ID = query.ActorGetByFile
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(f.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var people = make([]objects.Person, 0, 10)
+
+	for rows.Next() {
+		var (
+			p      objects.Person
+			bstamp int64
+		)
+
+		if err = rows.Scan(&p.ID, &p.Name, &bstamp); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		if bstamp != 0 {
+			p.Birthday = time.Unix(bstamp, 0)
+		}
+
+		people = append(people, p)
+	}
+
+	return people, nil
+} // func (db *Database) ActorGetByFile(f *objects.File) ([]objects.Person, error)
