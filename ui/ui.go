@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 00:39:38 krylon>
+// Time-stamp: <2021-08-12 17:39:42 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -159,6 +159,9 @@ func Create() (*GUI, error) {
 	g.mainBox.PackStart(g.notebook, true, true, 0)
 	g.win.Add(g.mainBox)
 	g.win.SetSizeRequest(960, 540)
+	g.win.SetTitle(fmt.Sprintf("%s %s",
+		common.AppName,
+		common.Version))
 
 	return g, nil
 } // func Create() (*GUI, error)
