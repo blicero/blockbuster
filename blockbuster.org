@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-12 19:16:12 krylon>
+# Time-stamp: <2021-08-12 23:32:52 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d)
@@ -33,12 +33,12 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-12 Do 19:16]
+#+CAPTION: Clock summary at [2021-08-12 Do 23:32]
 | Headline             | Time       |         |       |      |      |
 |----------------------+------------+---------+-------+------+------|
-| *Total time*         | *1d 10:53* |         |       |      |      |
+| *Total time*         | *1d 11:39* |         |       |      |      |
 |----------------------+------------+---------+-------+------+------|
-| *Blockbuster*        | *1d 10:53* |         |       |      |      |
+| *Blockbuster*        | *1d 11:39* |         |       |      |      |
 | \_  /Backend/        |            | /16:24/ |       |      |      |
 | \_    Database [0/1] |            |         | 14:30 |      |      |
 | \_      Tags         |            |         |       | 1:31 |      |
@@ -47,11 +47,11 @@ applications as well, I am good to go. So let's do this!
 | \_        Folders    |            |         |       |      | 1:18 |
 | \_    Scanner        |            |         |  1:54 |      |      |
 | \_      Folders      |            |         |       | 1:54 |      |
-| \_  /GUI/            |            | /18:29/ |       |      |      |
+| \_  /GUI/            |            | /19:15/ |       |      |      |
 | \_    Folders        |            |         |  0:25 |      |      |
-| \_    Files [1/3]    |            |         |  4:32 |      |      |
+| \_    Files [1/3]    |            |         |  5:18 |      |      |
 | \_      Tagging      |            |         |       | 4:26 |      |
-| \_      Person       |            |         |       | 0:06 |      |
+| \_      Person       |            |         |       | 0:52 |      |
 | \_    Dialog         |            |         |  0:27 |      |      |
 | \_    Menu           |            |         |  5:57 |      |      |
 | \_    Initialization |            |         |  1:45 |      |      |
@@ -128,6 +128,8 @@ applications as well, I am good to go. So let's do this!
      :END:
 **** TODO Person
      :LOGBOOK:
+     CLOCK: [2021-08-12 Do 23:26]--[2021-08-12 Do 23:32] =>  0:06
+     CLOCK: [2021-08-12 Do 20:34]--[2021-08-12 Do 21:14] =>  0:40
      CLOCK: [2021-08-12 Do 19:10]--[2021-08-12 Do 19:16] =>  0:06
      :END:
 **** TODO Editing Metadata
