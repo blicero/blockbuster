@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 00:43:01 krylon>
+// Time-stamp: <2021-08-12 18:12:10 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1605,3 +1605,199 @@ EXEC_QUERY:
 
 	return tags, nil
 } // func (db *Database) TagLinkGetByFile(f *objects.File) (map[int64]objects.Tag, error)
+
+// PersonAdd adds a new Person to the database.
+func (db *Database) PersonAdd(name string, birthday time.Time) (*objects.Person, error) {
+	const qid query.ID = query.PersonAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return nil, errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+	var (
+		res    sql.Result
+		bstamp int64
+	)
+
+	if birthday.IsZero() {
+		bstamp = 0
+	} else {
+		bstamp = birthday.Unix()
+	}
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(name, bstamp); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Tag %s to database: %s",
+				name,
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return nil, err
+		}
+	} else {
+		var id int64
+
+		if id, err = res.LastInsertId(); err != nil {
+			db.log.Printf("[ERROR] Cannot get ID of new Feed %s: %s\n",
+				name,
+				err.Error())
+			return nil, err
+		}
+
+		status = true
+		return &objects.Person{
+			ID:       id,
+			Name:     name,
+			Birthday: birthday,
+		}, nil
+	}
+} // func PersonAdd(name string, birthday time.Time) (*objects.Person, error)
+
+// PersonGetAll loads all Persons from the Database, in no particular order.
+func (db *Database) PersonGetAll() ([]objects.Person, error) {
+	const qid query.ID = query.PersonGetAll
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var list = make([]objects.Person, 0, 32)
+
+	for rows.Next() {
+		var (
+			p      objects.Person
+			bstamp int64
+		)
+
+		if err = rows.Scan(&p.ID, &p.Name, &bstamp); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		if bstamp != 0 {
+			p.Birthday = time.Unix(bstamp, 0)
+		}
+
+		list = append(list, p)
+	}
+
+	return list, nil
+} // func (db *Database) PersonGetAll() ([]objects.Person, error)
+
+// PersonGetByID looks up a Person by their ID.
+func (db *Database) PersonGetByID(id int64) (*objects.Person, error) {
+	const qid query.ID = query.PersonGetByID
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(id); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	if rows.Next() {
+		var (
+			p      = &objects.Person{ID: id}
+			bstamp int64
+		)
+
+		if err = rows.Scan(&p.Name, &bstamp); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		if bstamp != 0 {
+			p.Birthday = time.Unix(bstamp, 0)
+		}
+
+		return p, nil
+	}
+
+	return nil, nil
+} // func PersonGetByID(id int64) (*objects.Person, error)

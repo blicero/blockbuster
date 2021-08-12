@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 18:33:51 krylon>
+// Time-stamp: <2021-08-12 18:38:29 krylon>
 
 package database
 
@@ -31,43 +31,6 @@ CREATE TABLE file (
 	"CREATE INDEX file_path_idx ON file (path)",
 	"CREATE INDEX file_title_idx ON file (title)",
 	"CREATE INDEX file_hidden_idx ON file (hidden)",
-
-	`
-CREATE TABLE person (
-    id INTEGER PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    birthday INTEGER NOT NULL DEFAULT 0,
-    UNIQUE (name)
-)`,
-
-	"CREATE INDEX person_name_idx ON person (name)",
-
-	`
-CREATE TABLE person_url (
-    id INTEGER PRIMARY KEY,
-    person_id INTEGER NOT NULL,
-    url TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT '',
-    FOREIGN KEY (person_id) REFERENCES person (id)
-        ON DELETE RESTRICT
-        ON UPDATE RESTRICT
-)`,
-
-	"CREATE INDEX person_url_person_idx ON person_url (person_id)",
-
-	`
-CREATE TABLE actor (
-    id		INTEGER PRIMARY KEY,
-    file_id	INTEGER NOT NULL,
-    person_id	INTEGER NOT NULL,
-    UNIQUE (file_id, person_id),
-    FOREIGN KEY (file_id) REFERENCES file (id)
-        ON DELETE RESTRICT
-        ON UPDATE RESTRICT
-)
-`,
-	"CREATE INDEX actor_file_idx ON actor (file_id)",
-	"CREATE INDEX actor_person_idx ON actor (person_id)",
 
 	`
 CREATE TABLE file_url (
@@ -103,4 +66,61 @@ CREATE TABLE tag (
 
 	"CREATE INDEX file_tag_link_file_idx ON tag_link (file_id)",
 	"CREATE INDEX file_tag_link_tag_idx ON tag_link (tag_id)",
+
+	`
+CREATE TABLE person (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    birthday INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (name)
+)`,
+
+	"CREATE INDEX person_name_idx ON person (name)",
+
+	`
+CREATE TABLE person_url (
+    id INTEGER PRIMARY KEY,
+    person_id INTEGER NOT NULL,
+    url TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (person_id) REFERENCES person (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+)`,
+
+	"CREATE INDEX person_url_person_idx ON person_url (person_id)",
+
+	`
+CREATE TABLE actor (
+    id		INTEGER PRIMARY KEY,
+    file_id	INTEGER NOT NULL,
+    person_id	INTEGER NOT NULL,
+    UNIQUE (file_id, person_id),
+    FOREIGN KEY (file_id) REFERENCES file (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (person_id) REFERENCES person (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+)
+`,
+	"CREATE INDEX actor_file_idx ON actor (file_id)",
+	"CREATE INDEX actor_person_idx ON actor (person_id)",
+
+	`
+CREATE TABLE director (
+    id		INTEGER PRIMARY KEY,
+    file_id	INTEGER NOT NULL,
+    person_id	INTEGER NOT NULL,
+    UNIQUE (file_id, person_id),
+    FOREIGN KEY (file_id) REFERENCES file (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT,
+    FOREIGN KEY (person_id) REFERENCES person (id)
+        ON DELETE RESTRICT
+        ON UPDATE RESTRICT
+)
+`,
+	"CREATE INDEX director_file_idx ON director (file_id)",
+	"CREATE INDEX director_person_idx ON director (person_id)",
 }
