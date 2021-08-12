@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 17:39:42 krylon>
+// Time-stamp: <2021-08-12 23:29:25 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -20,6 +20,7 @@ import (
 	"github.com/blicero/blockbuster/logdomain"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/blockbuster/tree"
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
@@ -604,4 +605,149 @@ func (g *GUI) handleTagAdd() {
 			msg)
 		g.displayMsg(msg)
 	}
+} // func (g *GUI) handleTagAdd()
+
+func (g *GUI) handlePersonAdd() {
+	var (
+		err              error
+		dlg              *gtk.Dialog
+		dbox             *gtk.Box
+		grid             *gtk.Grid
+		nameLbl, bdayLbl *gtk.Label
+		entry            *gtk.Entry
+		cal              *gtk.Calendar
+	)
+
+	// XXX I would naively assume that if the function gtk.DialogNewWithButtons
+	//     accepts a slice of buttons (actually, pairs of strings and response values),
+	//     that it would display them.
+	//     But in my tests, I have only ever had one button displayed if they were supplied
+	//     via DialogNewWithButtons. No problemo, I thought, I can supply an empty slice and
+	//     use Dialog.AddButton to add the Buttons. More tedious, but what are you gonna do?
+	//     That resulted in a crash, however.
+	//     So the following trick, while looking very wrong, actually works:
+	//     - Supply two buttons, Cancel and OK to DialogNewWithButtons
+	//     - Add the OK button again with Dialog.AddButton
+	//
+	//     It's not a big drama, really, but it confused me quite a bit, so I thought I'd tell
+	//     my story in case anyone ever walks into the same trap.
+	//     I have no idea if this is a problem with Gtk, the Go bindings, or whatever, or maybe
+	//     even expected behaviour.
+
+	if dlg, err = gtk.DialogNewWithButtons(
+		"Add Person",
+		g.win,
+		gtk.DIALOG_MODAL,
+		[]interface{}{
+			"Cancel",
+			gtk.RESPONSE_CANCEL,
+			"OK",
+			gtk.RESPONSE_OK,
+		},
+	); err != nil {
+		g.log.Printf("Error creating gtk.Dialog: %s\n",
+			err.Error())
+		return
+	}
+
+	defer dlg.Close()
+
+	if _, err = dlg.AddButton("OK", gtk.RESPONSE_OK); err != nil {
+		g.log.Printf("[ERROR] Cannot add cancel button to AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	} else if grid, err = gtk.GridNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create gtk.Grid for AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	} else if nameLbl, err = gtk.LabelNew("Name:"); err != nil {
+		g.log.Printf("[ERROR] Cannot create name Label for AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	} else if bdayLbl, err = gtk.LabelNew("Birthday:"); err != nil {
+		g.log.Printf("[ERROR] Cannot create birthday Label for AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	} else if entry, err = gtk.EntryNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Entry for AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	} else if cal, err = gtk.CalendarNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Calendar for AddPerson Dialog: %s\n",
+			err.Error())
+	} else if dbox, err = dlg.GetContentArea(); err != nil {
+		g.log.Printf("[ERROR] Cannot get ContentArea of AddPerson Dialog: %s\n",
+			err.Error())
+		return
+	}
+
+	grid.InsertColumn(0)
+	grid.InsertColumn(1)
+	grid.InsertRow(0)
+	grid.InsertRow(1)
+
+	grid.Attach(nameLbl, 0, 0, 1, 1)
+	grid.Attach(bdayLbl, 0, 1, 1, 1)
+	grid.Attach(entry, 1, 0, 1, 1)
+	grid.Attach(cal, 1, 1, 1, 1)
+
+	dbox.PackStart(grid, true, true, 0)
+
+	dlg.ShowAll()
+
+	var (
+		name    string
+		y, m, d uint
+		bday    time.Time
+		person  *objects.Person
+		res     = dlg.Run()
+	)
+
+	switch res {
+	case gtk.RESPONSE_NONE:
+		fallthrough
+	case gtk.RESPONSE_DELETE_EVENT:
+		fallthrough
+	case gtk.RESPONSE_CLOSE:
+		fallthrough
+	case gtk.RESPONSE_CANCEL:
+		g.log.Println("[DEBUG] User changed their mind about adding a Tag. Fine with me.")
+		return
+	case gtk.RESPONSE_OK:
+		if name, err = entry.GetText(); err != nil {
+			g.log.Printf("[ERROR] Cannot get Text from Dialog: %s\n",
+				err.Error())
+			return
+		}
+
+		y, m, d = cal.GetDate()
+		bday = krylib.Date(int(y), int(m), int(d))
+
+		g.log.Printf("[DEBUG] User wants to add a Person named %q\n",
+			name)
+	default:
+		g.log.Printf("[DEBUG] Well, I did NOT see this coming: %d\n",
+			res)
+	}
+
+	if person, err = g.db.PersonAdd(name, bday); err != nil {
+		var msg = fmt.Sprintf("Cannot add Tag %q to database: %s",
+			name,
+			err.Error())
+		g.log.Printf("[ERROR] %s\n",
+			msg)
+		g.displayMsg(msg)
+		return
+	} /*else if err = g.tagAdd(t); err != nil {
+		var msg = fmt.Sprintf("Cannot add Tag %s to UI: %s",
+			person.Name,
+			err.Error())
+		g.log.Printf("[ERROR] %s\n",
+			msg)
+		g.displayMsg(msg)
+	} */
+
+	g.log.Printf("[DEBUG] Person %s (born %s) was added to Database\n",
+		person.Name,
+		person.Birthday.Format(common.TimestampFormatDate))
 } // func (g *GUI) handleTagAdd()

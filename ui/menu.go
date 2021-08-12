@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 09. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-09 19:44:54 krylon>
+// Time-stamp: <2021-08-12 23:27:11 krylon>
 
 package ui
 
@@ -78,6 +78,7 @@ func (g *GUI) initMenu() error {
 	addMenu.Append(itemAddPerson)
 
 	itemAddTag.Connect("activate", g.handleTagAdd)
+	itemAddPerson.Connect("activate", g.handlePersonAdd)
 
 	g.menubar.Append(amItem)
 
