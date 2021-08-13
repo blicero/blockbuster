@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 23:29:25 krylon>
+// Time-stamp: <2021-08-13 18:09:17 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -169,32 +169,10 @@ func Create() (*GUI, error) {
 
 // ShowAndRun displays the GUI and runs the Gtk event loop.
 func (g *GUI) ShowAndRun() {
-	var (
-		err        error
-		fileList   []objects.File
-		folderList []objects.Folder
-	)
-
-	if fileList, err = g.db.FileGetAll(); err != nil {
-		g.log.Printf("[ERROR] Cannot get list of all Files: %s\n",
+	if err := g.loadData(); err != nil {
+		g.log.Printf("[ERROR] Cannot load data: %s\n",
 			err.Error())
 		return
-	}
-
-	for idx := range fileList {
-		var handler = g.makeNewFileHandler(&fileList[idx])
-		glib.IdleAdd(handler)
-	}
-
-	if folderList, err = g.db.FolderGetAll(); err != nil {
-		g.log.Printf("[ERROR] Cannot get list of all Folders: %s\n",
-			err.Error())
-		return
-	}
-
-	for idx := range folderList {
-		var handler = g.makeNewFolderHandler(&folderList[idx])
-		glib.IdleAdd(handler)
 	}
 
 	go g.scanLoop()
@@ -221,6 +199,63 @@ func (g *GUI) scanLoop() {
 	}
 } // func (g *GUI) scanLoop()
 
+func (g *GUI) loadData() error {
+	var (
+		err        error
+		fileList   []objects.File
+		folderList []objects.Folder
+		actorList  []objects.Person
+	)
+
+	if fileList, err = g.db.FileGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot get list of all Files: %s\n",
+			err.Error())
+		return err
+	}
+
+	for idx := range fileList {
+		var handler = g.makeNewFileHandler(&fileList[idx])
+		glib.IdleAdd(handler)
+	}
+
+	if folderList, err = g.db.FolderGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot get list of all Folders: %s\n",
+			err.Error())
+		return err
+	}
+
+	for idx := range folderList {
+		var handler = g.makeNewFolderHandler(&folderList[idx])
+		glib.IdleAdd(handler)
+	}
+
+	if actorList, err = g.db.PersonGetAll(); err != nil {
+		g.log.Printf("[ERROR] Cannot get list of all Persons: %s\n",
+			err.Error())
+		return err
+	}
+
+	for pidx := range actorList {
+		var p = &actorList[pidx]
+		if fileList, err = g.db.ActorGetByPerson(p); err != nil {
+			g.log.Printf("[ERROR] Cannot get list of acting credits for %s: %s\n",
+				p.Name,
+				err.Error())
+			return err
+		} else if len(fileList) == 0 {
+			continue
+		}
+
+		for fidx := range fileList {
+			var f = &fileList[fidx]
+			var handler = g.makeNewActorHandler(p, f)
+			glib.IdleAdd(handler)
+		}
+	}
+
+	return nil
+} // func (g *GUI) loadData() error
+
 func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	var store *gtk.ListStore
 
@@ -235,15 +270,16 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 
 	return func() bool {
 		var (
-			err  error
-			tstr string
-			iter = store.Append()
+			err        error
+			astr, tstr string
+			iter       = store.Append()
 		)
 
 		if f.ID != 0 {
 			var (
-				tags  map[int64]objects.Tag
-				tlist []string
+				actors []objects.Person
+				tags   map[int64]objects.Tag
+				slist  []string
 			)
 
 			if tags, err = g.db.TagLinkGetByFile(f); err != nil {
@@ -251,20 +287,32 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 					f.DisplayTitle(),
 					err.Error())
 			} else {
-				tlist = make([]string, 0, len(tags))
+				slist = make([]string, 0, len(tags))
 				for _, t := range tags {
-					tlist = append(tlist, t.Name)
+					slist = append(slist, t.Name)
 				}
 
-				sort.Strings(tlist)
-				tstr = strings.Join(tlist, ", ")
+				sort.Strings(slist)
+				tstr = strings.Join(slist, ", ")
+			}
+
+			if actors, err = g.db.ActorGetByFile(f); err != nil {
+				g.log.Printf("[ERROR] Cannot get Actors for File %s: %s\n",
+					f.DisplayTitle(),
+					err.Error())
+			} else {
+				slist = make([]string, len(actors))
+				for i, p := range actors {
+					slist[i] = p.Name
+				}
+				astr = strings.Join(slist, ", ")
 			}
 		}
 
 		if err = store.Set(
 			iter,
-			[]int{0, 1, 6},
-			[]interface{}{f.ID, f.Path, tstr},
+			[]int{0, 1, 5, 6},
+			[]interface{}{f.ID, f.Path, astr, tstr},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
 				f.ID,
@@ -308,6 +356,73 @@ func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
 		return false
 	}
 } // func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool
+
+func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() bool {
+	var store = g.tabs[tiActor].store.(*gtk.TreeStore)
+
+	return func() bool {
+		var (
+			err         error
+			msg         string
+			iter, fiter *gtk.TreeIter
+			exists      bool
+			pos         int
+		)
+
+		iter, exists = store.GetIterFirst()
+
+		if !exists {
+			iter = store.Append(nil)
+			store.SetValue(iter, 0, p.ID)                                          // nolint: errcheck
+			store.SetValue(iter, 1, p.Name)                                        // nolint: errcheck
+			store.SetValue(iter, 2, p.Birthday.Format(common.TimestampFormatDate)) // nolint: errcheck
+		} else {
+			var (
+				ival  *glib.Value
+				gval  interface{}
+				found bool
+			)
+
+			for !found {
+				if ival, err = store.GetValue(iter, 0); err != nil {
+					msg = fmt.Sprintf("Cannot get Person ID from TreeIter: %s",
+						err.Error())
+					goto ERROR
+				} else if gval, err = ival.GoValue(); err != nil {
+					msg = fmt.Sprintf("Cannot get Go value from glib.Value: %s",
+						err.Error())
+					goto ERROR
+				}
+
+				var id = gval.(int)
+				if id == int(p.ID) {
+					found = true
+				} else if !store.IterNext(iter) {
+					break
+				}
+			}
+
+			if !found {
+				iter = store.Append(nil)
+				store.SetValue(iter, 0, p.ID)              // nolint: errcheck
+				store.SetValue(iter, 1, p.Name)            // nolint: errcheck
+				store.SetValue(iter, 2, p.Birthday.Year()) // nolint: errcheck
+			}
+		}
+
+		// iter now points to the node of the Person
+		pos = store.IterNChildren(iter)
+		fiter = store.Insert(iter, pos+1)
+		store.SetValue(fiter, 3, f.DisplayTitle()) // nolint: errcheck
+
+		return false
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+
+		return false
+	}
+} // func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func ()
 
 func (g *GUI) promptScanFolder() {
 	g.log.Printf("[DEBUG] You scannin', or what?!\n")
@@ -439,10 +554,10 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 		id)
 
 	var (
-		f                    *objects.File
-		contextMenu, tagMenu *gtk.Menu
-		tagItem, playItem    *gtk.MenuItem
-		hideItem             *gtk.CheckMenuItem
+		f                             *objects.File
+		contextMenu, tagMenu, actMenu *gtk.Menu
+		actItem, tagItem, playItem    *gtk.MenuItem
+		hideItem                      *gtk.CheckMenuItem
 	)
 
 	if f, err = g.db.FileGetByID(id); err != nil {
@@ -456,6 +571,14 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 		goto ERROR
 	} else if tagMenu, err = g.mkFileTagMenu(path, f); err != nil {
 		msg = fmt.Sprintf("Cannot create submenu Tag: %s",
+			err.Error())
+		goto ERROR
+	} else if actMenu, err = g.mkFileActorMenu(path, f); err != nil {
+		msg = fmt.Sprintf("Cannot create submenu Actor: %s",
+			err.Error())
+		goto ERROR
+	} else if actItem, err = gtk.MenuItemNewWithMnemonic("_Actors"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Actors: %s",
 			err.Error())
 		goto ERROR
 	} else if tagItem, err = gtk.MenuItemNewWithMnemonic("_Tag"); err != nil {
@@ -472,8 +595,10 @@ func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 		goto ERROR
 	}
 
+	actItem.SetSubmenu(actMenu)
 	tagItem.SetSubmenu(tagMenu)
 
+	contextMenu.Append(actItem)
 	contextMenu.Append(tagItem)
 	contextMenu.Append(hideItem)
 	contextMenu.Append(playItem)

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 17:24:16 krylon>
+// Time-stamp: <2021-08-13 12:15:04 krylon>
 
 package ui
 
@@ -145,3 +145,145 @@ func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() b
 		return false
 	}
 } // func mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func () bool
+
+func (g *GUI) mkFileActorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	var (
+		err           error
+		msg           string
+		actors        map[int64]objects.Person
+		alist, people []objects.Person
+		menu          *gtk.Menu
+	)
+
+	if people, err = g.db.PersonGetAll(); err != nil {
+		msg = fmt.Sprintf("Cannot load all people from Database: %s",
+			err.Error())
+		goto ERROR
+	} else if alist, err = g.db.ActorGetByFile(f); err != nil {
+		msg = fmt.Sprintf("Cannot load Actors for %s from Database: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	} else if menu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create Menu for Actors for %s: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	}
+
+	actors = make(map[int64]objects.Person, len(alist))
+
+	for _, p := range alist {
+		actors[p.ID] = p
+	}
+
+	// ...
+	for i, p := range people {
+		var (
+			linked bool
+			item   *gtk.CheckMenuItem
+		)
+
+		_, linked = actors[p.ID]
+
+		if item, err = gtk.CheckMenuItemNewWithLabel(p.Name); err != nil {
+			msg = fmt.Sprintf("Cannot create gtk.CheckMenuItem for Person %s: %s",
+				p.Name,
+				err.Error())
+			goto ERROR
+		}
+
+		item.SetActive(linked)
+		item.Connect("activate", g.mkFileActorToggleHandler(path, linked, f, &people[i]))
+		menu.Append(item)
+	}
+
+	return menu, nil
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+	return nil, err
+} // func (g *GUI) mkFileActorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
+
+func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
+	return func() {
+		var (
+			err error
+			msg string
+		)
+
+		if !linked {
+			err = g.db.ActorAdd(f, p)
+		} else {
+			err = g.db.ActorDelete(f, p)
+		}
+
+		if err != nil {
+			msg = fmt.Sprintf("Error toggling Actor %s for %s (%t -> %t): %s",
+				p.Name,
+				f.DisplayTitle(),
+				linked,
+				!linked,
+				err.Error())
+			goto ERROR
+		}
+
+		glib.IdleAdd(g.mkFileActorListUpdate(path, f))
+		return
+
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func()
+
+func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
+	return func() bool {
+		var (
+			err       error
+			msg, astr string
+			iter      *gtk.TreeIter
+			store     *gtk.ListStore
+			actors    []objects.Person
+			alist     []string
+		)
+
+		if actors, err = g.db.ActorGetByFile(f); err != nil {
+			msg = fmt.Sprintf("Cannot get Actors for %s: %s",
+				f.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		alist = make([]string, len(actors))
+
+		for i, a := range actors {
+			alist[i] = a.Name
+		}
+
+		astr = strings.Join(alist, ", ")
+
+		store = g.tabs[tiFile].store.(*gtk.ListStore)
+
+		if iter, err = store.GetIter(path); err != nil {
+			msg = fmt.Sprintf("Cannot get TreeIter for Actors of %s (%s): %s",
+				f.DisplayTitle(),
+				path,
+				err.Error())
+			goto ERROR
+		} else if err = store.Set(iter, []int{5}, []interface{}{astr}); err != nil {
+			msg = fmt.Sprintf("Error updating Actor list for %s: %s",
+				f.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		return false
+
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+		return false
+	}
+} // func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
