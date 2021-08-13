@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-13 21:31:41 krylon>
+# Time-stamp: <2021-08-14 00:18:05 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,29 +33,45 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-13 Fr 21:31]
-| Headline             | Time       |           |       |      |      |
-|----------------------+------------+-----------+-------+------+------|
-| *Total time*         | *1d 18:56* |           |       |      |      |
-|----------------------+------------+-----------+-------+------+------|
-| *Blockbuster*        | *1d 18:56* |           |       |      |      |
-| \_  /Backend/        |            | /16:24/   |       |      |      |
-| \_    Database [1/1] |            |           | 14:30 |      |      |
-| \_      Tags         |            |           |       | 1:31 |      |
-| \_      Person       |            |           |       | 1:29 |      |
-| \_      Schema       |            |           |       | 1:18 |      |
-| \_        Folders    |            |           |       |      | 1:18 |
-| \_    Scanner        |            |           |  1:54 |      |      |
-| \_      Folders      |            |           |       | 1:54 |      |
-| \_  /GUI/            |            | /1d 2:32/ |       |      |      |
-| \_    Folders        |            |           |  0:25 |      |      |
-| \_    Files [0/3]    |            |           | 12:35 |      |      |
-| \_      Tagging      |            |           |       | 5:11 |      |
-| \_      Person       |            |           |       | 7:24 |      |
-| \_    Dialog         |            |           |  0:27 |      |      |
-| \_    Menu           |            |           |  5:57 |      |      |
-| \_    Initialization |            |           |  1:45 |      |      |
+#+CAPTION: Clock summary at [2021-08-14 Sa 00:18]
+| Headline                  | Time       |           |       |      |      |
+|---------------------------+------------+-----------+-------+------+------|
+| *Total time*              | *1d 19:53* |           |       |      |      |
+|---------------------------+------------+-----------+-------+------+------|
+| *Blockbuster*             | *1d 19:53* |           |       |      |      |
+| \_  /Backend/             |            | /16:24/   |       |      |      |
+| \_    Database [1/1]      |            |           | 14:30 |      |      |
+| \_      Tags              |            |           |       | 1:31 |      |
+| \_      Person            |            |           |       | 1:29 |      |
+| \_      Schema            |            |           |       | 1:18 |      |
+| \_        Folders         |            |           |       |      | 1:18 |
+| \_    Scanner             |            |           |  1:54 |      |      |
+| \_      Folders           |            |           |       | 1:54 |      |
+| \_  /GUI/                 |            | /1d 3:29/ |       |      |      |
+| \_    Folders             |            |           |  0:25 |      |      |
+| \_    Files [1/4]         |            |           | 13:32 |      |      |
+| \_      Display file size |            |           |       | 0:57 |      |
+| \_      Tagging           |            |           |       | 5:11 |      |
+| \_      Person            |            |           |       | 7:24 |      |
+| \_    Dialog              |            |           |  0:27 |      |      |
+| \_    Menu                |            |           |  5:57 |      |      |
+| \_    Initialization      |            |           |  1:45 |      |      |
 #+END:
+** Thoughts that keep me up at night
+*** Performance
+    It's not like I'm super obsessed with performance. In fact, I am quite
+    patient when it comes to the performance of a computer or a piece of
+    software.
+    That doesn't mean I do not care about performance at all, though. After
+    all, it's a matter of, let's say /pride/.
+    But I have learned, both the easy way /and/ the hard way, that performance
+    optimization is one of the few things in life you really are better off
+    procrastinating like a champ.
+    So I am leaving all kinds of potential optimizations on the table for
+    now. Maybe, one day, if the pressure gets too much, I will revisit them
+    and make this things slick like a greased piglet on espresso.
+    For now, I'll just use this node to gather notes on where I, naively,
+    think some optimization might make a difference.
 ** Backend
 *** Database [1/1]
     :LOGBOOK:
@@ -142,7 +158,13 @@ applications as well, I am good to go. So let's do this!
     :LOGBOOK:
     CLOCK: [2021-08-07 Sa 19:23]--[2021-08-07 Sa 19:48] =>  0:25
     :END:
-*** Files [0/3]
+*** Files [1/4]
+**** DONE Display file size
+     CLOSED: [2021-08-14 Sa 00:17]
+     :LOGBOOK:
+     CLOCK: [2021-08-13 Fr 23:20]--[2021-08-14 Sa 00:17] =>  0:57
+     :END:
+     Can't be /that/ hard, now, can it?
 **** TODO Tagging
      :LOGBOOK:
      CLOCK: [2021-08-13 Fr 20:46]--[2021-08-13 Fr 21:31] =>  0:45
