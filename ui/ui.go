@@ -396,9 +396,9 @@ func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() boo
 
 		if !exists {
 			iter = store.Append(nil)
-			store.SetValue(iter, 0, p.ID)                                          // nolint: errcheck
-			store.SetValue(iter, 1, p.Name)                                        // nolint: errcheck
-			store.SetValue(iter, 2, p.Birthday.Format(common.TimestampFormatDate)) // nolint: errcheck
+			store.SetValue(iter, 0, p.ID)              // nolint: errcheck
+			store.SetValue(iter, 1, p.Name)            // nolint: errcheck
+			store.SetValue(iter, 2, p.Birthday.Year()) // nolint: errcheck
 		} else {
 			var (
 				ival  *glib.Value
