@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 12:15:04 krylon>
+// Time-stamp: <2021-08-13 20:28:07 krylon>
 
 package ui
 
@@ -230,6 +230,14 @@ func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objec
 		}
 
 		glib.IdleAdd(g.mkFileActorListUpdate(path, f))
+		if !linked {
+			glib.IdleAdd(g.makeNewActorHandler(p, f))
+		} else {
+			glib.IdleAdd(func() bool {
+				g.removeActor(p, f)
+				return false
+			})
+		}
 		return
 
 	ERROR:
