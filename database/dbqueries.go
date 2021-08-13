@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 19:03:18 krylon>
+// Time-stamp: <2021-08-13 12:12:58 krylon>
 
 package database
 
@@ -37,7 +37,7 @@ SELECT
     f.path,
     f.title,
     f.year
-FROM file_tag_link l
+FROM tag_link l
 INNER JOIN file f ON l.file_id = f.id
 WHERE l.tag_id = ?
 `,
@@ -51,10 +51,10 @@ WHERE l.file_id = ?
 `,
 	query.PersonAdd:       "INSERT INTO person (name, birthday) VALUES (?, ?)",
 	query.PersonDelete:    "DELETE FROM person WHERE id = ?",
-	query.PersonGetAll:    "SELECT id, name, birthday FROM person",
+	query.PersonGetAll:    "SELECT id, name, birthday FROM person ORDER BY name",
 	query.PersonGetByID:   "SELECT name, birthday FROM person WHERE id = ?",
 	query.PersonGetByName: "SELECT id, birthday FROM person WHERE name = ?",
-	query.ActorAdd:        "INSERT INTO actor (file_id, person_id) VALUE (?, ?)",
+	query.ActorAdd:        "INSERT INTO actor (file_id, person_id) VALUES (?, ?)",
 	query.ActorDelete:     "DELETE FROM actor WHERE file_id = ? AND person_id = ?",
 	query.ActorGetByPerson: `
 SELECT
@@ -75,5 +75,6 @@ SELECT
 FROM actor a
 INNER JOIN person p ON a.person_id = p.id
 WHERE a.file_id = ?
+ORDER BY p.name
 `,
 }
