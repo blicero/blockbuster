@@ -1,8 +1,8 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-13 18:12:48 krylon>
+# Time-stamp: <2021-08-13 20:33:13 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
-#+TAGS: database(d)
+#+TAGS: database(d) design(e), meditation(m)
 #+TAGS: optimize(o) refactor(r) cleanup(c)
 #+TODO: TODO(t)  RESEARCH(r) IMPLEMENT(i) TEST(e) | DONE(d) FAILED(f) CANCELLED(c)
 #+TODO: MEDITATE(m) PLANNING(p)
@@ -33,28 +33,28 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-13 Fr 18:12]
-| Headline             | Time       |         |       |      |      |
-|----------------------+------------+---------+-------+------+------|
-| *Total time*         | *1d 16:03* |         |       |      |      |
-|----------------------+------------+---------+-------+------+------|
-| *Blockbuster*        | *1d 16:03* |         |       |      |      |
-| \_  /Backend/        |            | /16:24/ |       |      |      |
-| \_    Database [0/1] |            |         | 14:30 |      |      |
-| \_      Tags         |            |         |       | 1:31 |      |
-| \_      Person       |            |         |       | 1:29 |      |
-| \_      Schema       |            |         |       | 1:18 |      |
-| \_        Folders    |            |         |       |      | 1:18 |
-| \_    Scanner        |            |         |  1:54 |      |      |
-| \_      Folders      |            |         |       | 1:54 |      |
-| \_  /GUI/            |            | /23:39/ |       |      |      |
-| \_    Folders        |            |         |  0:25 |      |      |
-| \_    Files [1/3]    |            |         |  9:42 |      |      |
-| \_      Tagging      |            |         |       | 4:26 |      |
-| \_      Person       |            |         |       | 5:16 |      |
-| \_    Dialog         |            |         |  0:27 |      |      |
-| \_    Menu           |            |         |  5:57 |      |      |
-| \_    Initialization |            |         |  1:45 |      |      |
+#+CAPTION: Clock summary at [2021-08-13 Fr 20:33]
+| Headline             | Time       |           |       |      |      |
+|----------------------+------------+-----------+-------+------+------|
+| *Total time*         | *1d 18:11* |           |       |      |      |
+|----------------------+------------+-----------+-------+------+------|
+| *Blockbuster*        | *1d 18:11* |           |       |      |      |
+| \_  /Backend/        |            | /16:24/   |       |      |      |
+| \_    Database [0/1] |            |           | 14:30 |      |      |
+| \_      Tags         |            |           |       | 1:31 |      |
+| \_      Person       |            |           |       | 1:29 |      |
+| \_      Schema       |            |           |       | 1:18 |      |
+| \_        Folders    |            |           |       |      | 1:18 |
+| \_    Scanner        |            |           |  1:54 |      |      |
+| \_      Folders      |            |           |       | 1:54 |      |
+| \_  /GUI/            |            | /1d 1:47/ |       |      |      |
+| \_    Folders        |            |           |  0:25 |      |      |
+| \_    Files [1/3]    |            |           | 11:50 |      |      |
+| \_      Tagging      |            |           |       | 4:26 |      |
+| \_      Person       |            |           |       | 7:24 |      |
+| \_    Dialog         |            |           |  0:27 |      |      |
+| \_    Menu           |            |           |  5:57 |      |      |
+| \_    Initialization |            |           |  1:45 |      |      |
 #+END:
 ** Backend
 *** Database [0/1]
@@ -108,6 +108,34 @@ applications as well, I am good to go. So let's do this!
    CLOCK: [2021-08-06 Fr 18:34]--[2021-08-06 Fr 18:36] =>  0:02
    CLOCK: [2021-08-05 Do 21:48]--[2021-08-05 Do 23:52] =>  2:04
    :END:
+*** Need closure?                                                :meditation:
+    I use closures a lot for creating handler functions for events, e.g. as I
+    build a popup menu when the user clicks on some item.
+    The first version of this application I wrote was in Ruby, where using
+    closures/blocks is easy, feels natural, and is aesthetically pleasing.
+    I Go, using closures this way feels less aesthetically pleasing. I mean,
+    it's not an eye sore, but it doesn't feel natural in the way it did with
+    Ruby. Damn, I miss Ruby.
+
+    Anyway, what I am trying to say is that I suspect there /probably/ is a
+    more idiomatic way to deal with this in Go. The existing solution is not
+    /bad/ by any means, so the pressure to "fix" this is very low. And so far
+    the alternative I managed to come up with were less aesthetically pleasing
+    and more verbose.
+
+    So this is not a problem, I think, but I have this nagging feeling in the
+    back of my head that there is a more elegant solution to all these dynamic
+    callbacks, but the combination of Go and Gtk's API makes that non-trivial.
+*** Got class?                                                   :meditation:
+    I dabbled quite a bit with Gtk2 in Python. One aspect I loved about
+    Python's Gtk2 interface to such a degree I tended to prefer it over Ruby
+    just for this feature, was that one could create custom TreeModel classes
+    in Python. That made a lot of problems disappear at once.
+    In Go, I am afraid that will not work. It's not even about Go not being
+    object-oriented, Ruby's Gtk2-bindings did not allow for custom model
+    classes, either, as far as I can recall.
+    Without custom models, this gets *very* tedious, which is one of the
+    things I seriously dislike about GUI development.
 *** DONE Folders
     CLOSED: [2021-08-09 Mo 20:53]
     :LOGBOOK:
@@ -128,6 +156,7 @@ applications as well, I am good to go. So let's do this!
      :END:
 **** TODO Person
      :LOGBOOK:
+     CLOCK: [2021-08-13 Fr 18:25]--[2021-08-13 Fr 20:33] =>  2:08
      CLOCK: [2021-08-13 Fr 16:37]--[2021-08-13 Fr 18:12] =>  1:35
      CLOCK: [2021-08-13 Fr 10:16]--[2021-08-13 Fr 13:05] =>  2:49
      CLOCK: [2021-08-12 Do 23:26]--[2021-08-12 Do 23:32] =>  0:06
@@ -152,7 +181,7 @@ applications as well, I am good to go. So let's do this!
     tranfer those recovered, hazy memories to Gtk3, I begin to realize that
     setting up the menu bar is quite likely every bit as tedious as setting up
     the TreeView instances, so maybe I should handle them in a similar manner.
-**** Random Ramblings
+**** Random Ramblings                                            :meditation:
      I want a menu. That shouldn't be too hard, but I feel that GUI programming
      in Go is rather tedious.
      Maybe it is a quality of GUI programming with statically typed languages
