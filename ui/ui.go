@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 18:09:17 krylon>
+// Time-stamp: <2021-08-13 19:30:18 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -382,8 +382,6 @@ func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
 } // func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool
 
 func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() bool {
-	var store = g.tabs[tiActor].store.(*gtk.TreeStore)
-
 	return func() bool {
 		var (
 			err         error
@@ -391,6 +389,7 @@ func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() boo
 			iter, fiter *gtk.TreeIter
 			exists      bool
 			pos         int
+			store       = g.tabs[tiActor].store.(*gtk.TreeStore)
 		)
 
 		iter, exists = store.GetIterFirst()
