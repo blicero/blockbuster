@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 20:28:07 krylon>
+// Time-stamp: <2021-08-13 21:24:49 krylon>
 
 package ui
 
@@ -94,7 +94,7 @@ func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects
 		g.log.Printf("[ERROR] %s\n", msg)
 		g.displayMsg(msg)
 	}
-} // func (g *GUI) mkFileTagAddHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
+} // func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
 
 func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() bool {
 	return func() bool {
