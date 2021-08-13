@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 19:30:18 krylon>
+// Time-stamp: <2021-08-13 21:23:21 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -252,6 +252,8 @@ func (g *GUI) loadData() error {
 			glib.IdleAdd(handler)
 		}
 	}
+
+	g.loadTagView()
 
 	return nil
 } // func (g *GUI) loadData() error

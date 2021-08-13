@@ -2,13 +2,15 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 10. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 17:14:12 krylon>
+// Time-stamp: <2021-08-13 21:21:40 krylon>
 
 package ui
 
 import (
+	"fmt"
 	"sort"
 
+	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -41,3 +43,59 @@ func (g *GUI) tagAdd(t *objects.Tag) error {
 
 	return nil
 } // func (g *GUI) tagAdd(t *objects.Tag) error
+
+func (g *GUI) loadTagView() bool {
+	var (
+		err   error
+		msg   string
+		tags  []objects.Tag
+		store *gtk.TreeStore
+	)
+
+	if tags, err = g.db.TagGetAll(); err != nil {
+		msg = fmt.Sprintf("Cannot load all Tags from Database: %s",
+			err.Error())
+		goto ERROR
+	}
+
+	store = g.tabs[tiTags].store.(*gtk.TreeStore)
+	store.Clear() // ???
+
+	for tidx := range tags {
+		var (
+			files []objects.File
+			titer *gtk.TreeIter
+			t     = &tags[tidx]
+		)
+
+		if files, err = g.db.TagLinkGetByTag(t); err != nil {
+			msg = fmt.Sprintf("Failed to load Files linked to Tag %s: %s",
+				t.Name,
+				err.Error())
+			goto ERROR
+		}
+
+		titer = store.Append(nil)
+		store.SetValue(titer, 0, t.ID)   // nolint: errcheck
+		store.SetValue(titer, 1, t.Name) // nolint: errcheck
+
+		for fidx := range files {
+			var (
+				f     = &files[fidx]
+				fiter = store.Append(titer)
+			)
+
+			store.SetValue(fiter, 2, f.DisplayTitle()) // nolint: errcheck
+			store.SetValue(fiter, 3, int(f.Year))      // nolint: errcheck
+		}
+	}
+
+	return false
+ERROR:
+	if !common.Debug {
+		store.Clear()
+	}
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+	return false
+} // func (g *GUI) loadTagView() bool
