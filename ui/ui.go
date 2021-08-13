@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 21:23:21 krylon>
+// Time-stamp: <2021-08-13 23:26:26 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -296,9 +296,10 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 
 	return func() bool {
 		var (
-			err        error
-			astr, tstr string
-			iter       = store.Append()
+			err                 error
+			astr, tstr, sizeStr string
+			size                int64
+			iter                = store.Append()
 		)
 
 		if f.ID != 0 {
@@ -335,10 +336,14 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 			}
 		}
 
+		if size = f.Size(); size != 0 {
+			sizeStr = krylib.FmtBytes(size)
+		}
+
 		if err = store.Set(
 			iter,
-			[]int{0, 1, 5, 6},
-			[]interface{}{f.ID, f.Path, astr, tstr},
+			[]int{0, 1, 2, 5, 6},
+			[]interface{}{f.ID, f.Path, sizeStr, astr, tstr},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
 				f.ID,

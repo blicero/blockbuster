@@ -2,11 +2,15 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 03. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-11 18:13:18 krylon>
+// Time-stamp: <2021-08-13 23:23:31 krylon>
 
 package objects
 
-import "path"
+import (
+	"path"
+
+	"github.com/blicero/krylib"
+)
 
 // File represents a simple video file.
 type File struct {
@@ -27,3 +31,11 @@ func (f *File) DisplayTitle() string {
 
 	return path.Base(f.Path)
 } // func (f *File) DisplayTitle() string
+
+func (f *File) Size() int64 {
+	if size, err := krylib.FileSize(f.Path); err != nil {
+		return 0
+	} else {
+		return size
+	}
+} // func (f *File) Size() int64
