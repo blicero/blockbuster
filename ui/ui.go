@@ -256,6 +256,30 @@ func (g *GUI) loadData() error {
 	return nil
 } // func (g *GUI) loadData() error
 
+func (g *GUI) reloadData() {
+	for _, c := range g.tabs {
+		switch s := c.store.(type) {
+		case *gtk.ListStore:
+			s.Clear()
+		case *gtk.TreeStore:
+			s.Clear()
+		default:
+			var msg = fmt.Sprintf("Unexpected type for TreeModel: %T",
+				c.store)
+			g.log.Printf("[CANTHAPPEN] %s\n", msg)
+			g.displayMsg(msg)
+			return
+		}
+	}
+
+	if err := g.loadData(); err != nil {
+		var msg = fmt.Sprintf("Failed to load data: %s",
+			err.Error())
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) reloadData()
+
 func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	var store *gtk.ListStore
 

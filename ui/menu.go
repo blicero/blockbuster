@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 09. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 23:27:11 krylon>
+// Time-stamp: <2021-08-13 19:12:40 krylon>
 
 package ui
 
@@ -21,10 +21,10 @@ func (g *GUI) initMenu() error {
 	// FIXME I think I should somehow make the menu more data driven. Kinda like the TreeViews.
 
 	var (
-		err                               error
-		fileMenu, addMenu                 *gtk.Menu
-		scanItem, quitItem, fmItem        *gtk.MenuItem
-		itemAddTag, itemAddPerson, amItem *gtk.MenuItem
+		err                                    error
+		fileMenu, addMenu                      *gtk.Menu
+		scanItem, reloadItem, quitItem, fmItem *gtk.MenuItem
+		itemAddTag, itemAddPerson, amItem      *gtk.MenuItem
 	)
 
 	if fileMenu, err = gtk.MenuNew(); err != nil {
@@ -33,6 +33,10 @@ func (g *GUI) initMenu() error {
 		return err
 	} else if scanItem, err = gtk.MenuItemNewWithMnemonic("_Scan"); err != nil {
 		g.log.Printf("[ERROR] Cannot create menu item File/Scan: %s\n",
+			err.Error())
+		return err
+	} else if reloadItem, err = gtk.MenuItemNewWithMnemonic("_Reload"); err != nil {
+		g.log.Printf("[ERROR] Cannot create menu item File/Reload: %s\n",
 			err.Error())
 		return err
 	} else if quitItem, err = gtk.MenuItemNewWithMnemonic("_Quit"); err != nil {
@@ -64,11 +68,13 @@ func (g *GUI) initMenu() error {
 	}
 
 	scanItem.Connect("activate", g.promptScanFolder)
+	reloadItem.Connect("activate", g.reloadData)
 	quitItem.Connect("activate", gtk.MainQuit)
 
 	fmItem.SetSubmenu(fileMenu)
 
 	fileMenu.Append(scanItem)
+	fileMenu.Append(reloadItem)
 	fileMenu.Append(quitItem)
 
 	g.menubar.Append(fmItem)
