@@ -2,13 +2,14 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 21:26:43 krylon>
+// Time-stamp: <2021-08-14 22:40:14 krylon>
 
 package ui
 
 import (
 	"fmt"
 	"net/url"
+	"os/exec"
 
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/krylib"
@@ -223,12 +224,13 @@ func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.M
 		return nil, err
 	} else if itemURLAdd, err = gtk.MenuItemNewWithMnemonic("_Add URL"); err != nil {
 		return nil, err
-	} else if urlMenu, err = gtk.MenuNew(); err != nil {
-		return nil, err
 	} else if itemURLList, err = gtk.MenuItemNewWithMnemonic("_URLs"); err != nil {
+		return nil, err
+	} else if urlMenu, err = g.getPersonLinks(p); err != nil {
 		return nil, err
 	}
 
+	itemURLList.SetSubmenu(urlMenu)
 	itemURLAdd.Connect("activate", g.mkPersonAddURLHandler(p))
 
 	menu.Append(itemURLAdd)
@@ -239,6 +241,76 @@ func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.M
 
 	return menu, nil
 } // func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.Menu, error)
+
+// nolint: unused
+func (g *GUI) getPersonLinks(p *objects.Person) (*gtk.Menu, error) {
+	var (
+		err   error
+		msg   string
+		menu  *gtk.Menu
+		links []objects.Link
+	)
+
+	if links, err = g.db.PersonURLGetByPerson(p); err != nil {
+		msg = fmt.Sprintf("Cannot get Links for %s: %s",
+			p.Name,
+			err.Error())
+		goto ERROR
+	} else if menu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create URL menu for %s: %s",
+			p.Name,
+			err.Error())
+		goto ERROR
+	}
+
+	for lidx := range links {
+		var (
+			item *gtk.MenuItem
+			l    = &links[lidx]
+		)
+
+		if item, err = gtk.MenuItemNewWithLabel(l.DisplayTitle()); err != nil {
+			msg = fmt.Sprintf("Cannot create menu handler for URL %q: %s",
+				l.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		item.Connect("activate", g.mkURLHandler(l))
+		menu.Append(item)
+	}
+
+	return menu, nil
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+	return nil, err
+} // func (g *GUI) getPersonLinks(p *objects.Person) ([]*gtk.MenuItem, error)
+
+func (g *GUI) mkURLHandler(l *objects.Link) func() {
+	const urlOpenCmd = "xdg-open"
+	return func() {
+		var (
+			err error
+			cmd *exec.Cmd
+		)
+
+		cmd = exec.Command(urlOpenCmd, l.URL.String())
+		if err = cmd.Run(); err != nil {
+			var msg = fmt.Sprintf("Cannot open URL %s (%s): %s",
+				l.DisplayTitle(),
+				l.URL.String(),
+				err.Error())
+			g.log.Printf("[ERROR] %s\n", msg)
+			g.displayMsg(msg)
+		} else {
+			g.log.Printf("[TRACE] Executed %s %s without error, so if it didn't open, it's not my fault.\n",
+				urlOpenCmd,
+				l.URL.String())
+		}
+	}
+}
 
 func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	return nil, krylib.ErrNotImplemented
