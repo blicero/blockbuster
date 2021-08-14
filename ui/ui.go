@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 17:27:05 krylon>
+// Time-stamp: <2021-08-14 21:25:02 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -151,6 +151,7 @@ func Create() (*GUI, error) {
 	// tree view and get a meaningful list of things to do.
 
 	g.tabs[tiFile].view.Connect("button-press-event", g.handleFileListClick)
+	g.tabs[tiPerson].view.Connect("button-press-event", g.handlePersonListClick)
 	// g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
 
 	g.win.Connect("destroy", gtk.MainQuit)
@@ -673,7 +674,7 @@ func (g *GUI) handlePersonAdd() {
 			gtk.RESPONSE_OK,
 		},
 	); err != nil {
-		g.log.Printf("Error creating gtk.Dialog: %s\n",
+		g.log.Printf("[ERROR] Error creating gtk.Dialog: %s\n",
 			err.Error())
 		return
 	}
@@ -756,10 +757,11 @@ func (g *GUI) handlePersonAdd() {
 	default:
 		g.log.Printf("[DEBUG] Well, I did NOT see this coming: %d\n",
 			res)
+		return
 	}
 
 	if person, err = g.db.PersonAdd(name, bday); err != nil {
-		var msg = fmt.Sprintf("Cannot add Tag %q to database: %s",
+		var msg = fmt.Sprintf("Cannot add Person %q to database: %s",
 			name,
 			err.Error())
 		g.log.Printf("[ERROR] %s\n",
@@ -778,4 +780,4 @@ func (g *GUI) handlePersonAdd() {
 	g.log.Printf("[DEBUG] Person %s (born %s) was added to Database\n",
 		person.Name,
 		person.Birthday.Format(common.TimestampFormatDate))
-} // func (g *GUI) handleTagAdd()
+} // func (g *GUI) handlerPersonAdd()
