@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 21:24:49 krylon>
+// Time-stamp: <2021-08-14 19:12:31 krylon>
 
 package ui
 
@@ -12,9 +12,172 @@ import (
 	"strings"
 
 	"github.com/blicero/blockbuster/objects"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
+
+func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
+	var be = gdk.EventButtonNewFromEvent(evt)
+
+	if be.Button() != gdk.BUTTON_SECONDARY {
+		return
+	}
+
+	var (
+		err    error
+		msg    string
+		exists bool
+		x, y   float64
+		path   *gtk.TreePath
+		col    *gtk.TreeViewColumn
+		model  *gtk.TreeModel
+		imodel gtk.ITreeModel
+		iter   *gtk.TreeIter
+	)
+
+	x = be.X()
+	y = be.Y()
+
+	path, col, _, _, exists = view.GetPathAtPos(int(x), int(y))
+
+	if !exists {
+		g.log.Printf("[DEBUG] There is no item at %f/%f\n",
+			x,
+			y)
+		return
+	}
+
+	g.log.Printf("[DEBUG] Handle Click at %f/%f -> Path %s\n",
+		x,
+		y,
+		path)
+
+	if imodel, err = view.GetModel(); err != nil {
+		g.log.Printf("[ERROR] Cannot get Model from View: %s\n",
+			err.Error())
+		return
+	}
+
+	model = imodel.ToTreeModel()
+
+	if iter, err = model.GetIter(path); err != nil {
+		g.log.Printf("[ERROR] Cannot get Iter from TreePath %s: %s\n",
+			path,
+			err.Error())
+		return
+	}
+
+	var title string = col.GetTitle()
+	g.log.Printf("[DEBUG] Column %s was clicked\n",
+		title)
+
+	var (
+		val *glib.Value
+		gv  interface{}
+		id  int64
+	)
+
+	if val, err = model.GetValue(iter, 0); err != nil {
+		g.log.Printf("[ERROR] Cannot get value for column 0: %s\n",
+			err.Error())
+		return
+	} else if gv, err = val.GoValue(); err != nil {
+		g.log.Printf("[ERROR] Cannot get Go value from GLib value: %s\n",
+			err.Error())
+	}
+
+	switch v := gv.(type) {
+	case int:
+		id = int64(v)
+	case int64:
+		id = v
+	default:
+		g.log.Printf("[ERROR] Unexpected type for ID column: %T\n",
+			v)
+	}
+
+	g.log.Printf("[DEBUG] ID of clicked-on row is %d\n",
+		id)
+
+	var (
+		f           *objects.File
+		contextMenu *gtk.Menu
+	)
+
+	if f, err = g.db.FileGetByID(id); err != nil {
+		msg = fmt.Sprintf("Cannot look up File #%d: %s",
+			id,
+			err.Error())
+		goto ERROR
+	} else if contextMenu, err = g.mkFileContextMenu(path, f); err != nil {
+		msg = fmt.Sprintf("Cannot create File context menu: %s",
+			err.Error())
+		goto ERROR
+	}
+
+	contextMenu.ShowAll()
+	contextMenu.PopupAtPointer(evt)
+	return
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+} // func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event)
+
+func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	var (
+		err                           error
+		msg                           string
+		actItem, tagItem, playItem    *gtk.MenuItem
+		hideItem                      *gtk.CheckMenuItem
+		contextMenu, tagMenu, actMenu *gtk.Menu
+	)
+
+	if contextMenu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu: %s",
+			err.Error())
+		goto ERROR
+	} else if tagMenu, err = g.mkFileTagMenu(path, f); err != nil {
+		msg = fmt.Sprintf("Cannot create submenu Tag: %s",
+			err.Error())
+		goto ERROR
+	} else if actMenu, err = g.mkFileActorMenu(path, f); err != nil {
+		msg = fmt.Sprintf("Cannot create submenu Actor: %s",
+			err.Error())
+		goto ERROR
+	} else if actItem, err = gtk.MenuItemNewWithMnemonic("_Actors"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Actors: %s",
+			err.Error())
+		goto ERROR
+	} else if tagItem, err = gtk.MenuItemNewWithMnemonic("_Tag"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Tag: %s",
+			err.Error())
+		goto ERROR
+	} else if hideItem, err = gtk.CheckMenuItemNewWithLabel("Hide"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Hide: %s",
+			err.Error())
+		goto ERROR
+	} else if playItem, err = gtk.MenuItemNewWithMnemonic("_Play"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Play: %s",
+			err.Error())
+		goto ERROR
+	}
+
+	actItem.SetSubmenu(actMenu)
+	tagItem.SetSubmenu(tagMenu)
+
+	contextMenu.Append(actItem)
+	contextMenu.Append(tagItem)
+	contextMenu.Append(hideItem)
+	contextMenu.Append(playItem)
+
+	return contextMenu, nil
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	// g.displayMsg(msg)
+	return nil, err
+} // func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	var (
