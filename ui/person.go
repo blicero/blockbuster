@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 04:35:16 krylon>
+// Time-stamp: <2021-08-14 17:27:59 krylon>
 
 package ui
 
@@ -19,7 +19,6 @@ func (g *GUI) loadPeople() bool {
 	var (
 		err    error
 		msg    string
-		pcnt   int
 		piter  *gtk.TreeIter
 		people []objects.Person
 		store  *gtk.TreeStore
@@ -44,12 +43,12 @@ func (g *GUI) loadPeople() bool {
 		// First, we add the Person to the TreeModel.
 		piter = store.Append(nil)
 
-		store.SetValue(piter, 0, p.ID)
-		store.SetValue(piter, 1, p.Name)
-		store.SetValue(piter, 2, p.Birthday.Year())
+		store.SetValue(piter, 0, p.ID)              // nolint: errcheck
+		store.SetValue(piter, 1, p.Name)            // nolint: errcheck
+		store.SetValue(piter, 2, p.Birthday.Year()) // nolint: errcheck
 
 		if files, err = g.db.ActorGetByPerson(p); err != nil {
-			msg = fmt.Sprintf("Cannot load Files with acting credits by %s (%s): %s",
+			msg = fmt.Sprintf("Cannot load Files with acting credits by %s (%d): %s",
 				p.Name,
 				p.ID,
 				err.Error())
@@ -62,8 +61,12 @@ func (g *GUI) loadPeople() bool {
 				f     = &files[fidx]
 			)
 
+			fiter = store.Append(piter)
+			store.SetValue(fiter, 3, f.DisplayTitle()) // nolint: errcheck
 		}
 	}
+
+	return false
 
 ERROR:
 	g.log.Printf("[ERROR] %s\n", msg)
