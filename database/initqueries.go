@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 18:38:29 krylon>
+// Time-stamp: <2021-08-14 19:53:32 krylon>
 
 package database
 
@@ -82,7 +82,9 @@ CREATE TABLE person_url (
     id INTEGER PRIMARY KEY,
     person_id INTEGER NOT NULL,
     url TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
+    UNIQUE (person_id, url),
     FOREIGN KEY (person_id) REFERENCES person (id)
         ON DELETE RESTRICT
         ON UPDATE RESTRICT

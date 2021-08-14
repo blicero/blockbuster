@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-12 19:06:46 krylon>
+// Time-stamp: <2021-08-14 20:20:57 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"regexp"
 	"sync"
@@ -1801,6 +1802,206 @@ EXEC_QUERY:
 
 	return nil, nil
 } // func (db *Database) PersonGetByID(id int64) (*objects.Person, error)
+
+// PersonURLAdd attaches a Link to a Person.
+func (db *Database) PersonURLAdd(p *objects.Person, l *objects.Link) error {
+	const qid query.ID = query.PersonURLAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+	var (
+		res sql.Result
+		id  int64
+	)
+
+EXEC_QUERY:
+	if res, err = stmt.Exec(p.ID, l.URL.String(), l.Title, l.Description); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Link %s to Person %s: %s",
+				l.DisplayTitle(),
+				p.Name,
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	} else if id, err = res.LastInsertId(); err != nil {
+		db.log.Printf("[ERROR] Cannot get ID of newly added Link %s: %s\n",
+			l.DisplayTitle(),
+			err.Error())
+		return err
+	}
+
+	l.ID = id
+	status = true
+	return nil
+} // func (db *Database) PersonURLAdd(p *objects.Person, l *objects.Link) error
+
+// PersonURLDelete deletes a Link that has been attached to a Person
+func (db *Database) PersonURLDelete(l *objects.Link) error {
+	const qid query.ID = query.PersonURLDelete
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(l.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot delete Link %s: %s",
+				l.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) PersonURLDelete(l *objects.Link) error
+
+// PersonURLGetByPerson returns all Links attached to the given Person.
+func (db *Database) PersonURLGetByPerson(p *objects.Person) ([]objects.Link, error) {
+	const qid query.ID = query.PersonURLGetByPerson
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var links = make([]objects.Link, 0, 4)
+
+	for rows.Next() {
+		var (
+			l    objects.Link
+			ustr string
+		)
+
+		if err = rows.Scan(&l.ID, &ustr, &l.Title, &l.Description); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		} else if l.URL, err = url.Parse(ustr); err != nil {
+			db.log.Printf("[ERROR] Cannot parse URL %q: %s\n",
+				ustr,
+				err.Error())
+			return nil, err
+		}
+
+		links = append(links, l)
+	}
+
+	return links, nil
+} // func (db *Database) PersonURLGetByPerson(p *objects.Person) ([]objects.Link, error)
 
 // ActorAdd adds a Person to a File as an actor/actress.
 func (db *Database) ActorAdd(f *objects.File, p *objects.Person) error {

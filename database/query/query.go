@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-10 18:30:12 krylon>
+// Time-stamp: <2021-08-14 19:54:31 krylon>
 
 //go:generate stringer -type=ID
 
@@ -39,6 +39,9 @@ const (
 	PersonGetAll
 	PersonGetByID
 	PersonGetByName
+	PersonURLAdd
+	PersonURLDelete
+	PersonURLGetByPerson
 	ActorAdd
 	ActorDelete
 	ActorGetByPerson

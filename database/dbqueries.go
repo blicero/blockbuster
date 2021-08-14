@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 12:12:58 krylon>
+// Time-stamp: <2021-08-14 20:21:29 krylon>
 
 package database
 
@@ -49,13 +49,16 @@ FROM tag_link l
 INNER JOIN tag t ON l.tag_id = t.id
 WHERE l.file_id = ?
 `,
-	query.PersonAdd:       "INSERT INTO person (name, birthday) VALUES (?, ?)",
-	query.PersonDelete:    "DELETE FROM person WHERE id = ?",
-	query.PersonGetAll:    "SELECT id, name, birthday FROM person ORDER BY name",
-	query.PersonGetByID:   "SELECT name, birthday FROM person WHERE id = ?",
-	query.PersonGetByName: "SELECT id, birthday FROM person WHERE name = ?",
-	query.ActorAdd:        "INSERT INTO actor (file_id, person_id) VALUES (?, ?)",
-	query.ActorDelete:     "DELETE FROM actor WHERE file_id = ? AND person_id = ?",
+	query.PersonAdd:            "INSERT INTO person (name, birthday) VALUES (?, ?)",
+	query.PersonDelete:         "DELETE FROM person WHERE id = ?",
+	query.PersonGetAll:         "SELECT id, name, birthday FROM person ORDER BY name",
+	query.PersonGetByID:        "SELECT name, birthday FROM person WHERE id = ?",
+	query.PersonGetByName:      "SELECT id, birthday FROM person WHERE name = ?",
+	query.PersonURLAdd:         "INSERT INTO person_url (person_id, url, title, description) VALUES (?, ?, ?, ?)",
+	query.PersonURLDelete:      "DELETE FROM person_url WHERE id = ?",
+	query.PersonURLGetByPerson: "SELECT id, url, title, description FROM person_url WHERE person_id = ?",
+	query.ActorAdd:             "INSERT INTO actor (file_id, person_id) VALUES (?, ?)",
+	query.ActorDelete:          "DELETE FROM actor WHERE file_id = ? AND person_id = ?",
 	query.ActorGetByPerson: `
 SELECT
     f.id,
