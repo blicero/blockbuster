@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 23:26:26 krylon>
+// Time-stamp: <2021-08-14 01:20:09 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -258,20 +258,36 @@ func (g *GUI) loadData() error {
 	return nil
 } // func (g *GUI) loadData() error
 
+func (g *GUI) clearData(idx tabIdx) {
+	switch s := g.tabs[idx].store.(type) {
+	case *gtk.ListStore:
+		s.Clear()
+	case *gtk.TreeStore:
+		s.Clear()
+	default:
+		var msg = fmt.Sprintf("Unexpected type for TreeModel: %T",
+			g.tabs[idx].store)
+		g.log.Printf("[CANTHAPPEN] %s\n", msg)
+		g.displayMsg(msg)
+		return
+	}
+} // func (g *GUI) clearData(idx tabIdx)
+
 func (g *GUI) reloadData() {
-	for _, c := range g.tabs {
-		switch s := c.store.(type) {
-		case *gtk.ListStore:
-			s.Clear()
-		case *gtk.TreeStore:
-			s.Clear()
-		default:
-			var msg = fmt.Sprintf("Unexpected type for TreeModel: %T",
-				c.store)
-			g.log.Printf("[CANTHAPPEN] %s\n", msg)
-			g.displayMsg(msg)
-			return
-		}
+	for idx := range g.tabs {
+		// switch s := c.store.(type) {
+		// case *gtk.ListStore:
+		// 	s.Clear()
+		// case *gtk.TreeStore:
+		// 	s.Clear()
+		// default:
+		// 	var msg = fmt.Sprintf("Unexpected type for TreeModel: %T",
+		// 		c.store)
+		// 	g.log.Printf("[CANTHAPPEN] %s\n", msg)
+		// 	g.displayMsg(msg)
+		// 	return
+		// }
+		g.clearData(tabIdx(idx))
 	}
 
 	if err := g.loadData(); err != nil {
