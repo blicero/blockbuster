@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 22:40:14 krylon>
+// Time-stamp: <2021-08-15 02:54:11 krylon>
 
 package ui
 
@@ -242,7 +242,6 @@ func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.M
 	return menu, nil
 } // func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.Menu, error)
 
-// nolint: unused
 func (g *GUI) getPersonLinks(p *objects.Person) (*gtk.Menu, error) {
 	var (
 		err   error
