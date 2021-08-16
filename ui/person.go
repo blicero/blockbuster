@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-15 02:54:11 krylon>
+// Time-stamp: <2021-08-16 19:07:57 krylon>
 
 package ui
 
@@ -12,7 +12,6 @@ import (
 	"os/exec"
 
 	"github.com/blicero/blockbuster/objects"
-	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
@@ -312,7 +311,34 @@ func (g *GUI) mkURLHandler(l *objects.Link) func() {
 }
 
 func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
-	return nil, krylib.ErrNotImplemented
+	var (
+		err      error
+		msg      string
+		menu     *gtk.Menu
+		playItem *gtk.MenuItem
+	)
+
+	if menu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create context Menu for File %s: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	} else if playItem, err = gtk.MenuItemNewWithMnemonic("_Play"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item to play %s: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	}
+
+	playItem.Connect("activate", func() { g.playFile(f) })
+	menu.Append(playItem)
+
+	return menu, nil
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	// g.displayMsg(msg)
+	return nil, err
 } // func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkPersonAddURLHandler(p *objects.Person) func() {

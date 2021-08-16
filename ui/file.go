@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 19:12:31 krylon>
+// Time-stamp: <2021-08-16 19:08:13 krylon>
 
 package ui
 
@@ -163,6 +163,8 @@ func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu,
 			err.Error())
 		goto ERROR
 	}
+
+	playItem.Connect("activate", func() { g.playFile(f) })
 
 	actItem.SetSubmenu(actMenu)
 	tagItem.SetSubmenu(tagMenu)
