@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-14 23:00:41 krylon>
+# Time-stamp: <2021-08-16 19:13:13 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,12 +33,12 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-14 Sa 23:00]
+#+CAPTION: Clock summary at [2021-08-16 Mo 19:13]
 | Headline                  | Time      |           |       |      |      |
 |---------------------------+-----------+-----------+-------+------+------|
-| *Total time*              | *2d 0:11* |           |       |      |      |
+| *Total time*              | *2d 0:44* |           |       |      |      |
 |---------------------------+-----------+-----------+-------+------+------|
-| *Blockbuster*             | *2d 0:11* |           |       |      |      |
+| *Blockbuster*             | *2d 0:44* |           |       |      |      |
 | \_  /Backend/             |           | /19:38/   |       |      |      |
 | \_    Database [1/2]      |           |           | 17:44 |      |      |
 | \_      Tags              |           |           |       | 1:31 |      |
@@ -48,10 +48,11 @@ applications as well, I am good to go. So let's do this!
 | \_      URLs              |           |           |       | 3:14 |      |
 | \_    Scanner             |           |           |  1:54 |      |      |
 | \_      Folders           |           |           |       | 1:54 |      |
-| \_  /GUI/                 |           | /1d 4:33/ |       |      |      |
+| \_  /GUI/                 |           | /1d 5:06/ |       |      |      |
 | \_    Context menus       |           |           |  1:04 |      |      |
 | \_    Folders             |           |           |  0:25 |      |      |
-| \_    Files [2/4]         |           |           | 13:32 |      |      |
+| \_    Files [4/5]         |           |           | 14:05 |      |      |
+| \_      Play Files        |           |           |       | 0:33 |      |
 | \_      Display file size |           |           |       | 0:57 |      |
 | \_      Tagging           |           |           |       | 5:11 |      |
 | \_      Person            |           |           |       | 7:24 |      |
@@ -191,7 +192,19 @@ applications as well, I am good to go. So let's do this!
     :LOGBOOK:
     CLOCK: [2021-08-07 Sa 19:23]--[2021-08-07 Sa 19:48] =>  0:25
     :END:
-*** Files [2/4]
+*** Files [4/5]
+**** DONE Play Files
+     CLOSED: [2021-08-16 Mo 19:10]
+     :LOGBOOK:
+     CLOCK: [2021-08-16 Mo 18:37]--[2021-08-16 Mo 19:10] =>  0:33
+     :END:
+     The whole point of having a video collection, of course, is to /watch/
+     them. So we are going to that.
+     [2021-08-16 Mo 19:10]
+     There is some fine-print to deal with, but prima facie it works as
+     planned. In particular, I take the command line from an environment
+     variable for now, I'd prefer a configuration file or something like
+     that.
 **** DONE Display file size
      CLOSED: [2021-08-14 Sa 00:17]
      :LOGBOOK:
@@ -211,7 +224,8 @@ applications as well, I am good to go. So let's do this!
      CLOCK: [2021-08-11 Mi 18:36]--[2021-08-11 Mi 18:37] =>  0:01
      CLOCK: [2021-08-11 Mi 17:34]--[2021-08-11 Mi 18:12] =>  0:38
      :END:
-**** TODO Person
+**** DONE Person
+     CLOSED: [2021-08-16 Mo 18:36]
      :LOGBOOK:
      CLOCK: [2021-08-13 Fr 18:25]--[2021-08-13 Fr 20:33] =>  2:08
      CLOCK: [2021-08-13 Fr 16:37]--[2021-08-13 Fr 18:12] =>  1:35
