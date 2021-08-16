@@ -3,6 +3,7 @@ module github.com/blicero/blockbuster
 go 1.16
 
 require (
+	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be
 	github.com/blicero/krylib v0.0.0-20210813213829-7ef73853b370
 	github.com/gotk3/gotk3 v0.6.1
 	github.com/hashicorp/logutils v1.0.0

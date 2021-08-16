@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 21:25:02 krylon>
+// Time-stamp: <2021-08-16 19:01:13 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -10,11 +10,14 @@ package ui
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/anmitsu/go-shlex"
 	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/database"
 	"github.com/blicero/blockbuster/logdomain"
@@ -26,8 +29,10 @@ import (
 )
 
 const (
-	qDepth      = 128
-	refInterval = time.Second // nolint: deadcode
+	qDepth        = 128
+	refInterval   = time.Second // nolint: deadcode
+	defaultPlayer = "/usr/bin/mpv"
+	playerEnv     = "VIDEOPLAYER"
 )
 
 type tabContent struct {
@@ -55,13 +60,15 @@ type GUI struct {
 	notebook *gtk.Notebook
 	tabs     []tabContent
 	tags     objects.TagList
+	playCmd  []string
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
 func Create() (*GUI, error) {
 	var (
-		err error
-		g   = &GUI{
+		err          error
+		playerString string
+		g            = &GUI{
 			fileQ: make(chan *objects.File, qDepth),
 		}
 	)
@@ -79,6 +86,16 @@ func Create() (*GUI, error) {
 		return nil, err
 	} else if g.tags, err = g.db.TagGetAll(); err != nil {
 		g.log.Printf("[ERROR] Cannot fetch all Tags from Database: %s\n",
+			err.Error())
+		return nil, err
+	}
+
+	if playerString = os.Getenv(playerEnv); playerString == "" {
+		playerString = defaultPlayer
+	}
+
+	if g.playCmd, err = shlex.Split(playerString, true); err != nil {
+		g.log.Printf("[ERROR] Cannot parse player command: %s\n",
 			err.Error())
 		return nil, err
 	}
@@ -781,3 +798,26 @@ func (g *GUI) handlePersonAdd() {
 		person.Name,
 		person.Birthday.Format(common.TimestampFormatDate))
 } // func (g *GUI) handlerPersonAdd()
+
+func (g *GUI) playFile(f *objects.File) {
+	var (
+		err  error
+		cmd  *exec.Cmd
+		args = make([]string, len(g.playCmd))
+	)
+
+	for i, a := range g.playCmd[1:] {
+		args[i] = a
+	}
+	args[len(args)-1] = f.Path
+
+	cmd = exec.Command(g.playCmd[0], args...)
+
+	if err = cmd.Start(); err != nil {
+		var msg = fmt.Sprintf("Failed to start player for %s: %s",
+			f.DisplayTitle(),
+			err.Error())
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) playFile(f *objects.File)

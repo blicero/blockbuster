@@ -1,3 +1,5 @@
+github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
+github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
 github.com/blicero/krylib v0.0.0-20210813213829-7ef73853b370 h1:NBAiL+Z3Enh1DslDhO9RoZ3NJvw5RgLat8PHb/bOTVI=
 github.com/blicero/krylib v0.0.0-20210813213829-7ef73853b370/go.mod h1:HoeVtZ3wPyRWgB76KOcQ+HdtScp4V9DB76gOgN/YOcw=
 github.com/gotk3/gotk3 v0.6.1 h1:GJ400a0ecEEWrzjBvzBzH+pB/esEMIGdB9zPSmBdoeo=
