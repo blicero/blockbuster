@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 20:21:29 krylon>
+// Time-stamp: <2021-08-18 19:36:46 krylon>
 
 package database
 
@@ -18,6 +18,8 @@ VALUES           (   ?,         ?)
 	query.FileGetAll:         "SELECT id, folder_id, path, title, year, hidden FROM file",
 	query.FileGetByPath:      "SELECT id, folder_id, title, year, hidden FROM file WHERE path = ?",
 	query.FileGetByID:        "SELECT folder_id, path, title, year, hidden FROM file WHERE id = ?",
+	query.FileUpdateTitle:    "UPDATE file SET title = ? WHERE id = ?",
+	query.FileUpdateYear:     "UPDATE file SET year = ? WHERE id = ?",
 	query.FolderAdd:          "INSERT INTO folder(path) VALUES (?)",
 	query.FolderRemove:       "DELETE FROM folder WHERE id = ?",
 	query.FolderUpdateScan:   "UPDATE folder SET last_scan = ? WHERE id = ?",

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 19:54:31 krylon>
+// Time-stamp: <2021-08-18 19:36:06 krylon>
 
 //go:generate stringer -type=ID
 
@@ -20,6 +20,8 @@ const (
 	FileGetAll
 	FileGetByPath
 	FileGetByID
+	FileUpdateTitle
+	FileUpdateYear
 	FolderAdd
 	FolderUpdateScan
 	FolderRemove
