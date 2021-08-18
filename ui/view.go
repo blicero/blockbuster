@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 04:35:25 krylon>
+// Time-stamp: <2021-08-18 19:26:15 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -39,7 +39,10 @@ const (
 type column struct {
 	colType glib.Type
 	title   string
+	edit    bool
 }
+
+type cellEditHandlerFactory func(int) func(*gtk.CellRendererText, string, string)
 
 type view struct {
 	title   string
@@ -57,7 +60,7 @@ func (v *view) typeList() []glib.Type {
 	return res
 } // func (v *view) typeList() []glib.Type
 
-func (v *view) create() (gtk.ITreeModel, *gtk.TreeView, error) {
+func (v *view) create(handlerFactory cellEditHandlerFactory) (gtk.ITreeModel, *gtk.TreeView, error) {
 	var (
 		err   error
 		cols  []glib.Type
@@ -85,15 +88,25 @@ func (v *view) create() (gtk.ITreeModel, *gtk.TreeView, error) {
 	}
 
 	for idx, cSpec := range v.columns {
-		var col *gtk.TreeViewColumn
-		if col, err = createCol(cSpec.title, idx); err != nil {
+		var (
+			col      *gtk.TreeViewColumn
+			renderer *gtk.CellRendererText
+		)
+		if col, renderer, err = createCol(cSpec.title, idx); err != nil {
 			return nil, nil, err
 		}
+
+		renderer.Set("editable", cSpec.edit)     // nolint: errcheck
+		renderer.Set("editable-set", cSpec.edit) // nolint: errcheck
+		if cSpec.edit && handlerFactory != nil {
+			renderer.Connect("edited", handlerFactory(idx))
+		}
+
 		tv.AppendColumn(col)
 	}
 
 	return store, tv, nil
-} // func (v *view) create() (gtk.ITreeModel, gtk.TreeView, error)
+} // func (v *view) create(handlerFactory cellEditHandlerFactory) (gtk.ITreeModel, *gtk.TreeView, error)
 
 var viewList = []view{
 	view{
@@ -107,6 +120,7 @@ var viewList = []view{
 			column{
 				colType: glib.TYPE_STRING,
 				title:   "Title",
+				edit:    true,
 			},
 			column{
 				colType: glib.TYPE_STRING,
@@ -115,6 +129,7 @@ var viewList = []view{
 			column{
 				colType: glib.TYPE_INT,
 				title:   "Year",
+				edit:    true,
 			},
 			column{
 				colType: glib.TYPE_STRING,

@@ -2,15 +2,17 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-16 19:08:13 krylon>
+// Time-stamp: <2021-08-18 19:56:14 krylon>
 
 package ui
 
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/objects"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
@@ -460,3 +462,100 @@ func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() 
 		return false
 	}
 } // func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
+
+func (g *GUI) mkFileEditHandler(colIdx int) func(*gtk.CellRendererText, string, string) {
+	if common.Debug {
+		g.log.Printf("[DEBUG] Create FileView edit handler for column %d\n", colIdx)
+	}
+
+	return func(r *gtk.CellRendererText, pStr, text string) {
+		var (
+			err       error
+			msg       string
+			iter      *gtk.TreeIter
+			path      *gtk.TreePath
+			year, fid int64
+			fidVal    *glib.Value
+			val       interface{}
+			f         *objects.File
+			store     = g.tabs[tiFile].store.(*gtk.ListStore)
+		)
+
+		g.log.Printf("[TRACE] FileView edit handler for column %d: %q\n",
+			colIdx,
+			text)
+
+		if path, err = gtk.TreePathNewFromString(pStr); err != nil {
+			msg = fmt.Sprintf("Cannot convert string %q to TreePath: %s",
+				pStr,
+				err.Error())
+			goto ERROR
+		} else if iter, err = store.GetIter(path); err != nil {
+			msg = fmt.Sprintf("Cannot get TreeIter from TreePath %s: %s",
+				path,
+				err.Error())
+			goto ERROR
+		} else if fidVal, err = store.GetValue(iter, 0); err != nil {
+			msg = fmt.Sprintf("Cannot get File ID from ListStore: %s",
+				err.Error())
+			goto ERROR
+		} else if val, err = fidVal.GoValue(); err != nil {
+			msg = fmt.Sprintf("Cannot extract Go value from ID column: %s",
+				err.Error())
+			goto ERROR
+		}
+
+		fid = int64(val.(int))
+
+		if f, err = g.db.FileGetByID(fid); err != nil {
+			msg = fmt.Sprintf("Cannot get File #%d: %s",
+				fid,
+				err.Error())
+			goto ERROR
+		}
+
+		// FIXME - Update database, too!
+		switch colIdx {
+		case 1: // Title
+			g.log.Printf("[DEBUG] Edit Title: %q\n", text)
+			if err = g.db.FileUpdateTitle(f, text); err != nil {
+				msg = fmt.Sprintf("Cannot update Title of File %s (%d): %s",
+					f.DisplayTitle(),
+					f.ID,
+					err.Error())
+				goto ERROR
+			}
+			val = text
+		case 3: // Year
+			if year, err = strconv.ParseInt(text, 10, 64); err != nil {
+				msg = fmt.Sprintf("Cannot parse year %q: %s",
+					text,
+					err.Error())
+				goto ERROR
+			} else if err = g.db.FileUpdateYear(f, year); err != nil {
+				msg = fmt.Sprintf("Cannot update Year for File %s (%d) to %d: %s",
+					f.DisplayTitle(),
+					f.ID,
+					year,
+					err.Error())
+				goto ERROR
+			}
+			g.log.Printf("[DEBUG] Edit Year: %d\n", year)
+			val = year
+		default:
+			msg = fmt.Sprintf("I do not know how to edit File View column #%d", colIdx)
+			goto ERROR
+		}
+
+		if err = store.Set(iter, []int{colIdx}, []interface{}{val}); err != nil {
+			msg = fmt.Sprintf("Error updating ListStore: %s",
+				err.Error())
+			goto ERROR
+		}
+
+		return
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) mkFileEditHandler(column int) func (r *gtk.CellRendererText, path, text string)

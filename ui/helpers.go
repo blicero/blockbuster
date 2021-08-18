@@ -2,25 +2,29 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 18:23:11 krylon>
+// Time-stamp: <2021-08-18 18:23:14 krylon>
 
 package ui
 
-import "github.com/gotk3/gotk3/gtk"
+import (
+	"github.com/gotk3/gotk3/gtk"
+)
 
-func createCol(title string, id int) (*gtk.TreeViewColumn, error) {
+func createCol(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererText, error) {
 	renderer, err := gtk.CellRendererTextNew()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	col, err := gtk.TreeViewColumnNewWithAttribute(title, renderer, "text", id)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return col, nil
-} // func createCol(title string, id int) (*gtk.TreeViewColumn, error)
+	col.SetResizable(true)
+
+	return col, renderer, nil
+} // func createCol(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererText, error)
 
 func (g *GUI) displayMsg(msg string) {
 	var (

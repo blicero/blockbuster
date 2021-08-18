@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-16 19:01:13 krylon>
+// Time-stamp: <2021-08-18 19:28:08 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -130,13 +130,19 @@ func Create() (*GUI, error) {
 
 	g.tabs = make([]tabContent, len(viewList))
 
-	for tabIdx, v := range viewList {
+	for tIdx, v := range viewList {
 		var (
-			tab tabContent
-			lbl *gtk.Label
+			tab         tabContent
+			lbl         *gtk.Label
+			editHandler cellEditHandlerFactory
 		)
 
-		if tab.store, tab.view, err = v.create(); err != nil {
+		switch tabIdx(tIdx) {
+		case tiFile:
+			editHandler = g.mkFileEditHandler
+		}
+
+		if tab.store, tab.view, err = v.create(editHandler); err != nil {
 			g.log.Printf("[ERROR] Cannot create TreeView %q: %s\n",
 				v.title,
 				err.Error())
@@ -153,11 +159,13 @@ func Create() (*GUI, error) {
 			return nil, err
 		}
 
-		g.tabs[tabIdx] = tab
+		g.tabs[tIdx] = tab
 		tab.scr.Add(tab.view)
 		g.notebook.AppendPage(tab.scr, lbl)
 
 	}
+
+	// Edit Handlers
 
 	////////////////////////////////////////////////////////////////////////////////
 	///// Context Menus ////////////////////////////////////////////////////////////
