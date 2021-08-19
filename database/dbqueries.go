@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-18 19:36:46 krylon>
+// Time-stamp: <2021-08-19 14:03:21 krylon>
 
 package database
 
@@ -78,6 +78,29 @@ SELECT
     p.name,
     p.birthday
 FROM actor a
+INNER JOIN person p ON a.person_id = p.id
+WHERE a.file_id = ?
+ORDER BY p.name
+`,
+	query.DirectorAdd:    "INSERT INTO director (file_id, person_id) VALUES (?, ?)",
+	query.DirectorDelete: "DELETE FROM director WHERE file_id = ? AND person_id = ?",
+	query.DirectorGetByPerson: `
+SELECT
+    f.id,
+    f.folder_id,
+    f.path,
+    f.title,
+    f.year
+FROM director a
+INNER JOIN file f ON a.file_id = f.id
+WHERE a.person_id = ?
+`,
+	query.DirectorGetByFile: `
+SELECT
+    p.id,
+    p.name,
+    p.birthday
+FROM director a
 INNER JOIN person p ON a.person_id = p.id
 WHERE a.file_id = ?
 ORDER BY p.name

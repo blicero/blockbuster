@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-18 19:44:07 krylon>
+// Time-stamp: <2021-08-19 19:23:04 krylon>
 
 // Package database is wrapper around the actual database connection.
 // For the time being, we use SQLite, because it is awesome.
@@ -1175,6 +1175,7 @@ EXEC_QUERY:
 	return nil, nil
 } // func (db *Database) FileGetByID(id int64) (*objects.File, error)
 
+// FileUpdateTitle sets the title of a File.
 func (db *Database) FileUpdateTitle(f *objects.File, title string) error {
 	const qid query.ID = query.FileUpdateTitle
 	var (
@@ -1229,7 +1230,7 @@ EXEC_QUERY:
 			waitForRetry()
 			goto EXEC_QUERY
 		} else {
-			err = fmt.Errorf("Cannot set Title of File %q (%d) to %q: %s\n",
+			err = fmt.Errorf("Cannot set Title of File %q (%d) to %q: %s",
 				f.DisplayTitle(),
 				f.ID,
 				title,
@@ -1244,6 +1245,7 @@ EXEC_QUERY:
 	return nil
 } // func (db *Database) FileUpdateTitle(f *objects.File, title string) error
 
+// FileUpdateYear sets the year of a File
 func (db *Database) FileUpdateYear(f *objects.File, year int64) error {
 	const qid query.ID = query.FileUpdateYear
 	var (
@@ -1298,7 +1300,7 @@ EXEC_QUERY:
 			waitForRetry()
 			goto EXEC_QUERY
 		} else {
-			err = fmt.Errorf("Cannot set Year of File %q (%d) to %d: %s\n",
+			err = fmt.Errorf("Cannot set Year of File %q (%d) to %d: %s",
 				f.DisplayTitle(),
 				f.ID,
 				year,
@@ -2379,3 +2381,242 @@ EXEC_QUERY:
 
 	return people, nil
 } // func (db *Database) ActorGetByFile(f *objects.File) ([]objects.Person, error)
+
+// DirectorAdd adds a Person to a File as an director/actress.
+func (db *Database) DirectorAdd(f *objects.File, p *objects.Person) error {
+	const qid query.ID = query.DirectorAdd
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot add Director %s to Film %s: %s",
+				p.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) DirectorAdd(f *objects.File, p *objects.Person) error
+
+// DirectorDelete removes a Person from a Files "acting credits".
+func (db *Database) DirectorDelete(f *objects.File, p *objects.Person) error {
+	const qid query.ID = query.DirectorDelete
+	var (
+		err    error
+		msg    string
+		stmt   *sql.Stmt
+		tx     *sql.Tx
+		status bool
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid.String(),
+			err.Error())
+		return err
+	} else if db.tx != nil {
+		tx = db.tx
+	} else {
+	BEGIN_AD_HOC:
+		if tx, err = db.db.Begin(); err != nil {
+			if worthARetry(err) {
+				waitForRetry()
+				goto BEGIN_AD_HOC
+			} else {
+				msg = fmt.Sprintf("Error starting transaction: %s\n",
+					err.Error())
+				db.log.Printf("[ERROR] %s\n", msg)
+				return errors.New(msg)
+			}
+
+		} else {
+			defer func() {
+				var err2 error
+				if status {
+					if err2 = tx.Commit(); err2 != nil {
+						db.log.Printf("[ERROR] Failed to commit ad-hoc transaction: %s\n",
+							err2.Error())
+					}
+				} else if err2 = tx.Rollback(); err2 != nil {
+					db.log.Printf("[ERROR] Rollback of ad-hoc transaction failed: %s\n",
+						err2.Error())
+				}
+			}()
+		}
+	}
+
+	stmt = tx.Stmt(stmt)
+
+EXEC_QUERY:
+	if _, err = stmt.Exec(f.ID, p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		} else {
+			err = fmt.Errorf("Cannot remove Director %s from Film %s: %s",
+				p.Name,
+				f.DisplayTitle(),
+				err.Error())
+			db.log.Printf("[ERROR] %s\n", err.Error())
+			return err
+		}
+	}
+
+	status = true
+	return nil
+} // func (db *Database) DirectorDelete(f *objects.File, p *objects.Person) error
+
+// DirectorGetByPerson gets all the Files the given Person has acted in.
+func (db *Database) DirectorGetByPerson(p *objects.Person) ([]objects.File, error) {
+	const qid query.ID = query.DirectorGetByPerson
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(p.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var files = make([]objects.File, 0, 10)
+
+	for rows.Next() {
+		var (
+			f objects.File
+		)
+
+		if err = rows.Scan(&f.ID, &f.FolderID, &f.Path, &f.Title, &f.Year); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		files = append(files, f)
+	}
+
+	return files, nil
+} // func (db *Database) DirectorGetByPerson(p *objects.Person) ([]objects.File, error)
+
+// DirectorGetByFile gets all the People that have acted in the given File.
+func (db *Database) DirectorGetByFile(f *objects.File) ([]objects.Person, error) {
+	const qid query.ID = query.DirectorGetByFile
+	var (
+		err  error
+		stmt *sql.Stmt
+	)
+
+	if stmt, err = db.getQuery(qid); err != nil {
+		db.log.Printf("[ERROR] Cannot prepare query %s: %s\n",
+			qid,
+			err.Error())
+		return nil, err
+	} else if db.tx != nil {
+		stmt = db.tx.Stmt(stmt)
+	}
+
+	var rows *sql.Rows
+
+EXEC_QUERY:
+	if rows, err = stmt.Query(f.ID); err != nil {
+		if worthARetry(err) {
+			waitForRetry()
+			goto EXEC_QUERY
+		}
+
+		return nil, err
+	}
+
+	defer rows.Close() // nolint: errcheck,gosec
+
+	var people = make([]objects.Person, 0, 10)
+
+	for rows.Next() {
+		var (
+			p      objects.Person
+			bstamp int64
+		)
+
+		if err = rows.Scan(&p.ID, &p.Name, &bstamp); err != nil {
+			db.log.Printf("[ERROR] Cannot scan row: %s\n", err.Error())
+			return nil, err
+		}
+
+		if bstamp != 0 {
+			p.Birthday = time.Unix(bstamp, 0)
+		}
+
+		people = append(people, p)
+	}
+
+	return people, nil
+} // func (db *Database) DirectorGetByFile(f *objects.File) ([]objects.Person, error)
