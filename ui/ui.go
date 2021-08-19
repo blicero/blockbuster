@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 09:58:56 krylon>
+// Time-stamp: <2021-08-19 19:33:49 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -495,6 +495,72 @@ func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() boo
 		return false
 	}
 } // func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func ()
+
+func (g *GUI) makeNewDirectorHandler(p *objects.Person, f *objects.File) func() bool {
+	return func() bool {
+		var (
+			err         error
+			msg         string
+			iter, fiter *gtk.TreeIter
+			exists      bool
+			pos         int
+			store       = g.tabs[tiDirector].store.(*gtk.TreeStore)
+		)
+
+		iter, exists = store.GetIterFirst()
+
+		if !exists {
+			iter = store.Append(nil)
+			store.SetValue(iter, 0, p.ID)              // nolint: errcheck
+			store.SetValue(iter, 1, p.Name)            // nolint: errcheck
+			store.SetValue(iter, 2, p.Birthday.Year()) // nolint: errcheck
+		} else {
+			var (
+				ival  *glib.Value
+				gval  interface{}
+				found bool
+			)
+
+			for !found {
+				if ival, err = store.GetValue(iter, 0); err != nil {
+					msg = fmt.Sprintf("Cannot get Person ID from TreeIter: %s",
+						err.Error())
+					goto ERROR
+				} else if gval, err = ival.GoValue(); err != nil {
+					msg = fmt.Sprintf("Cannot get Go value from glib.Value: %s",
+						err.Error())
+					goto ERROR
+				}
+
+				var id = gval.(int)
+				if id == int(p.ID) {
+					found = true
+				} else if !store.IterNext(iter) {
+					break
+				}
+			}
+
+			if !found {
+				iter = store.Append(nil)
+				store.SetValue(iter, 0, p.ID)              // nolint: errcheck
+				store.SetValue(iter, 1, p.Name)            // nolint: errcheck
+				store.SetValue(iter, 2, p.Birthday.Year()) // nolint: errcheck
+			}
+		}
+
+		// iter now points to the node of the Person
+		pos = store.IterNChildren(iter)
+		fiter = store.Insert(iter, pos+1)
+		store.SetValue(fiter, 3, f.DisplayTitle()) // nolint: errcheck
+
+		return false
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+
+		return false
+	}
+} // func (g *GUI) makeNewDirectorHandler(p *objects.Person, f *objects.File) func ()
 
 func (g *GUI) promptScanFolder() {
 	g.log.Printf("[DEBUG] You scannin', or what?!\n")

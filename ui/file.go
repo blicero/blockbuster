@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-18 19:56:14 krylon>
+// Time-stamp: <2021-08-19 19:39:10 krylon>
 
 package ui
 
@@ -129,11 +129,11 @@ ERROR:
 
 func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	var (
-		err                           error
-		msg                           string
-		actItem, tagItem, playItem    *gtk.MenuItem
-		hideItem                      *gtk.CheckMenuItem
-		contextMenu, tagMenu, actMenu *gtk.Menu
+		err                                    error
+		msg                                    string
+		actItem, dirItem, tagItem, playItem    *gtk.MenuItem
+		hideItem                               *gtk.CheckMenuItem
+		contextMenu, tagMenu, actMenu, dirMenu *gtk.Menu
 	)
 
 	if contextMenu, err = gtk.MenuNew(); err != nil {
@@ -148,8 +148,16 @@ func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu,
 		msg = fmt.Sprintf("Cannot create submenu Actor: %s",
 			err.Error())
 		goto ERROR
+	} else if dirMenu, err = g.mkFileDirectorMenu(path, f); err != nil {
+		msg = fmt.Sprintf("Cannot create submenu Director: %s",
+			err.Error())
+		goto ERROR
 	} else if actItem, err = gtk.MenuItemNewWithMnemonic("_Actors"); err != nil {
 		msg = fmt.Sprintf("Cannot create context menu item Actors: %s",
+			err.Error())
+		goto ERROR
+	} else if dirItem, err = gtk.MenuItemNewWithMnemonic("_Director"); err != nil {
+		msg = fmt.Sprintf("Cannot create context menu item Director: %s",
 			err.Error())
 		goto ERROR
 	} else if tagItem, err = gtk.MenuItemNewWithMnemonic("_Tag"); err != nil {
@@ -170,9 +178,11 @@ func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu,
 
 	actItem.SetSubmenu(actMenu)
 	tagItem.SetSubmenu(tagMenu)
+	dirItem.SetSubmenu(dirMenu)
 
-	contextMenu.Append(actItem)
 	contextMenu.Append(tagItem)
+	contextMenu.Append(actItem)
+	contextMenu.Append(dirItem)
 	contextMenu.Append(hideItem)
 	contextMenu.Append(playItem)
 
@@ -462,6 +472,156 @@ func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() 
 		return false
 	}
 } // func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
+
+func (g *GUI) mkFileDirectorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	var (
+		err           error
+		msg           string
+		directors     map[int64]objects.Person
+		alist, people []objects.Person
+		menu          *gtk.Menu
+	)
+
+	if people, err = g.db.PersonGetAll(); err != nil {
+		msg = fmt.Sprintf("Cannot load all people from Database: %s",
+			err.Error())
+		goto ERROR
+	} else if alist, err = g.db.DirectorGetByFile(f); err != nil {
+		msg = fmt.Sprintf("Cannot load Directors for %s from Database: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	} else if menu, err = gtk.MenuNew(); err != nil {
+		msg = fmt.Sprintf("Cannot create Menu for Directors for %s: %s",
+			f.DisplayTitle(),
+			err.Error())
+		goto ERROR
+	}
+
+	directors = make(map[int64]objects.Person, len(alist))
+
+	for _, p := range alist {
+		directors[p.ID] = p
+	}
+
+	// ...
+	for i, p := range people {
+		var (
+			linked bool
+			item   *gtk.CheckMenuItem
+		)
+
+		_, linked = directors[p.ID]
+
+		if item, err = gtk.CheckMenuItemNewWithLabel(p.Name); err != nil {
+			msg = fmt.Sprintf("Cannot create gtk.CheckMenuItem for Person %s: %s",
+				p.Name,
+				err.Error())
+			goto ERROR
+		}
+
+		item.SetActive(linked)
+		item.Connect("activate", g.mkFileDirectorToggleHandler(path, linked, f, &people[i]))
+		menu.Append(item)
+	}
+
+	return menu, nil
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
+	return nil, err
+} // func (g *GUI) mkFileDirectorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
+
+func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
+	return func() {
+		var (
+			err error
+			msg string
+		)
+
+		if !linked {
+			err = g.db.DirectorAdd(f, p)
+		} else {
+			err = g.db.DirectorDelete(f, p)
+		}
+
+		if err != nil {
+			msg = fmt.Sprintf("Error toggling Director %s for %s (%t -> %t): %s",
+				p.Name,
+				f.DisplayTitle(),
+				linked,
+				!linked,
+				err.Error())
+			goto ERROR
+		}
+
+		glib.IdleAdd(g.mkFileDirectorListUpdate(path, f))
+		if !linked {
+			glib.IdleAdd(g.makeNewDirectorHandler(p, f))
+		} else {
+			glib.IdleAdd(func() bool {
+				g.removeDirector(p, f)
+				return false
+			})
+		}
+		return
+
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+	}
+} // func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func()
+
+func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
+	return func() bool {
+		var (
+			err       error
+			msg, astr string
+			iter      *gtk.TreeIter
+			store     *gtk.ListStore
+			directors []objects.Person
+			alist     []string
+		)
+
+		if directors, err = g.db.DirectorGetByFile(f); err != nil {
+			msg = fmt.Sprintf("Cannot get Directors for %s: %s",
+				f.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		alist = make([]string, len(directors))
+
+		for i, a := range directors {
+			alist[i] = a.Name
+		}
+
+		astr = strings.Join(alist, ", ")
+
+		store = g.tabs[tiFile].store.(*gtk.ListStore)
+
+		if iter, err = store.GetIter(path); err != nil {
+			msg = fmt.Sprintf("Cannot get TreeIter for Directors of %s (%s): %s",
+				f.DisplayTitle(),
+				path,
+				err.Error())
+			goto ERROR
+		} else if err = store.Set(iter, []int{5}, []interface{}{astr}); err != nil {
+			msg = fmt.Sprintf("Error updating Director list for %s: %s",
+				f.DisplayTitle(),
+				err.Error())
+			goto ERROR
+		}
+
+		return false
+
+	ERROR:
+		g.log.Printf("[ERROR] %s\n", msg)
+		g.displayMsg(msg)
+		return false
+	}
+} // func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
 
 func (g *GUI) mkFileEditHandler(colIdx int) func(*gtk.CellRendererText, string, string) {
 	if common.Debug {

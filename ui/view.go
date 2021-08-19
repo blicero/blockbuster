@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 02:03:32 krylon>
+// Time-stamp: <2021-08-19 13:59:07 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -24,6 +24,7 @@ type tabIdx uint8
 const (
 	tiFile tabIdx = iota
 	tiActor
+	tiDirector
 	tiTags
 	tiPerson
 	tiFolder
@@ -151,6 +152,28 @@ var viewList = []view{
 	},
 	view{
 		title: "Actor",
+		store: storeTree,
+		columns: []column{
+			column{
+				colType: glib.TYPE_INT,
+				title:   "ID",
+			},
+			column{
+				colType: glib.TYPE_STRING,
+				title:   "Name",
+			},
+			column{
+				colType: glib.TYPE_INT,
+				title:   "Born",
+			},
+			column{
+				colType: glib.TYPE_STRING,
+				title:   "Films",
+			},
+		},
+	},
+	view{
+		title: "Director",
 		store: storeTree,
 		columns: []column{
 			column{
