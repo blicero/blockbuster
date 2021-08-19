@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-18 20:01:11 krylon>
+# Time-stamp: <2021-08-19 03:08:37 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,33 +33,33 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-18 Mi 20:01]
-| Headline                  | Time      |           |       |      |      |
-|---------------------------+-----------+-----------+-------+------+------|
-| *Total time*              | *2d 4:33* |           |       |      |      |
-|---------------------------+-----------+-----------+-------+------+------|
-| *Blockbuster*             | *2d 4:33* |           |       |      |      |
-| \_  /Backend/             |           | /19:38/   |       |      |      |
-| \_    Database [1/2]      |           |           | 17:44 |      |      |
-| \_      Tags              |           |           |       | 1:31 |      |
-| \_      Person            |           |           |       | 1:29 |      |
-| \_      Schema            |           |           |       | 1:18 |      |
-| \_        Folders         |           |           |       |      | 1:18 |
-| \_      URLs              |           |           |       | 3:14 |      |
-| \_    Scanner             |           |           |  1:54 |      |      |
-| \_      Folders           |           |           |       | 1:54 |      |
-| \_  /GUI/                 |           | /1d 8:55/ |       |      |      |
-| \_    Context menus       |           |           |  1:04 |      |      |
-| \_    Folders             |           |           |  0:25 |      |      |
-| \_    Files [4/5]         |           |           | 17:54 |      |      |
-| \_      Play Files        |           |           |       | 0:33 |      |
-| \_      Display file size |           |           |       | 0:57 |      |
-| \_      Tagging           |           |           |       | 5:11 |      |
-| \_      Person            |           |           |       | 7:24 |      |
-| \_      Editing Metadata  |           |           |       | 3:49 |      |
-| \_    Dialog              |           |           |  0:27 |      |      |
-| \_    Menu                |           |           |  5:57 |      |      |
-| \_    Initialization      |           |           |  1:45 |      |      |
+#+CAPTION: Clock summary at [2021-08-19 Do 03:08]
+| Headline                  | Time      |            |       |      |      |
+|---------------------------+-----------+------------+-------+------+------|
+| *Total time*              | *2d 6:44* |            |       |      |      |
+|---------------------------+-----------+------------+-------+------+------|
+| *Blockbuster*             | *2d 6:44* |            |       |      |      |
+| \_  /Backend/             |           | /19:38/    |       |      |      |
+| \_    Database [1/2]      |           |            | 17:44 |      |      |
+| \_      Tags              |           |            |       | 1:31 |      |
+| \_      Person            |           |            |       | 1:29 |      |
+| \_      Schema            |           |            |       | 1:18 |      |
+| \_        Folders         |           |            |       |      | 1:18 |
+| \_      URLs              |           |            |       | 3:14 |      |
+| \_    Scanner             |           |            |  1:54 |      |      |
+| \_      Folders           |           |            |       | 1:54 |      |
+| \_  /GUI/                 |           | /1d 11:06/ |       |      |      |
+| \_    Context menus       |           |            |  1:04 |      |      |
+| \_    Folders             |           |            |  0:25 |      |      |
+| \_    Files [4/5]         |           |            | 18:59 |      |      |
+| \_      Play Files        |           |            |       | 0:33 |      |
+| \_      Display file size |           |            |       | 0:57 |      |
+| \_      Tagging           |           |            |       | 5:11 |      |
+| \_      Person            |           |            |       | 7:24 |      |
+| \_      Editing Metadata  |           |            |       | 4:54 |      |
+| \_    Dialog              |           |            |  0:27 |      |      |
+| \_    Menu                |           |            |  5:57 |      |      |
+| \_    Initialization      |           |            |  1:45 |      |      |
 #+END:
 ** Thoughts that keep me up at night
 *** Performance
@@ -130,6 +130,7 @@ applications as well, I am good to go. So let's do this!
      first design.
 ** GUI
    :LOGBOOK:
+   CLOCK: [2021-08-19 Do 02:02]--[2021-08-19 Do 03:08] =>  1:06
    CLOCK: [2021-08-09 Mo 22:42]--[2021-08-09 Mo 22:42] =>  0:00
    CLOCK: [2021-08-07 Sa 22:10]--[2021-08-08 So 01:27] =>  3:17
    CLOCK: [2021-08-06 Fr 18:34]--[2021-08-06 Fr 18:36] =>  0:02
@@ -237,6 +238,7 @@ applications as well, I am good to go. So let's do this!
      :END:
 **** TODO Editing Metadata
      :LOGBOOK:
+     CLOCK: [2021-08-18 Mi 20:32]--[2021-08-18 Mi 21:37] =>  1:05
      CLOCK: [2021-08-18 Mi 18:30]--[2021-08-18 Mi 20:01] =>  1:31
      CLOCK: [2021-08-16 Mo 21:30]--[2021-08-16 Mo 23:30] =>  2:00
      CLOCK: [2021-08-16 Mo 19:56]--[2021-08-16 Mo 20:14] =>  0:18
