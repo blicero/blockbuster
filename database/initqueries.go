@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 02. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-14 19:53:32 krylon>
+// Time-stamp: <2021-08-18 21:26:27 krylon>
 
 package database
 
@@ -17,12 +17,12 @@ var initQueries = []string{
 
 	`
 CREATE TABLE file (
-    id INTEGER PRIMARY KEY,
-    folder_id INTEGER NOT NULL,
-    path TEXT UNIQUE NOT NULL,
-    title TEXT NOT NULL DEFAULT '',
-    year INTEGER NOT NULL DEFAULT 0,
-    hidden INTEGER NOT NULL DEFAULT 0,
+    id		INTEGER PRIMARY KEY,
+    folder_id	INTEGER NOT NULL,
+    path	TEXT UNIQUE NOT NULL,
+    title	TEXT NOT NULL DEFAULT '',
+    year	INTEGER NOT NULL DEFAULT 0,
+    hidden	INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (folder_id) REFERENCES folder (id)
        ON DELETE RESTRICT
        ON UPDATE RESTRICT
