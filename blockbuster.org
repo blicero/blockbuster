@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-19 03:08:37 krylon>
+# Time-stamp: <2021-08-20 00:17:01 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,33 +33,34 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-19 Do 03:08]
-| Headline                  | Time      |            |       |      |      |
-|---------------------------+-----------+------------+-------+------+------|
-| *Total time*              | *2d 6:44* |            |       |      |      |
-|---------------------------+-----------+------------+-------+------+------|
-| *Blockbuster*             | *2d 6:44* |            |       |      |      |
-| \_  /Backend/             |           | /19:38/    |       |      |      |
-| \_    Database [1/2]      |           |            | 17:44 |      |      |
-| \_      Tags              |           |            |       | 1:31 |      |
-| \_      Person            |           |            |       | 1:29 |      |
-| \_      Schema            |           |            |       | 1:18 |      |
-| \_        Folders         |           |            |       |      | 1:18 |
-| \_      URLs              |           |            |       | 3:14 |      |
-| \_    Scanner             |           |            |  1:54 |      |      |
-| \_      Folders           |           |            |       | 1:54 |      |
-| \_  /GUI/                 |           | /1d 11:06/ |       |      |      |
-| \_    Context menus       |           |            |  1:04 |      |      |
-| \_    Folders             |           |            |  0:25 |      |      |
-| \_    Files [4/5]         |           |            | 18:59 |      |      |
-| \_      Play Files        |           |            |       | 0:33 |      |
-| \_      Display file size |           |            |       | 0:57 |      |
-| \_      Tagging           |           |            |       | 5:11 |      |
-| \_      Person            |           |            |       | 7:24 |      |
-| \_      Editing Metadata  |           |            |       | 4:54 |      |
-| \_    Dialog              |           |            |  0:27 |      |      |
-| \_    Menu                |           |            |  5:57 |      |      |
-| \_    Initialization      |           |            |  1:45 |      |      |
+#+CAPTION: Clock summary at [2021-08-20 Fr 00:16]
+| Headline                  | Time       |            |       |      |      |
+|---------------------------+------------+------------+-------+------+------|
+| *Total time*              | *2d 11:35* |            |       |      |      |
+|---------------------------+------------+------------+-------+------+------|
+| *Blockbuster*             | *2d 11:35* |            |       |      |      |
+| \_  /Backend/             |            | /19:38/    |       |      |      |
+| \_    Database [1/2]      |            |            | 17:44 |      |      |
+| \_      Tags              |            |            |       | 1:31 |      |
+| \_      Person            |            |            |       | 1:29 |      |
+| \_      Schema            |            |            |       | 1:18 |      |
+| \_        Folders         |            |            |       |      | 1:18 |
+| \_      URLs              |            |            |       | 3:14 |      |
+| \_    Scanner             |            |            |  1:54 |      |      |
+| \_      Folders           |            |            |       | 1:54 |      |
+| \_  /GUI/                 |            | /1d 15:57/ |       |      |      |
+| \_    Search              |            |            |  4:25 |      |      |
+| \_    Context menus       |            |            |  1:04 |      |      |
+| \_    Folders             |            |            |  0:25 |      |      |
+| \_    Files [4/5]         |            |            | 19:25 |      |      |
+| \_      Play Files        |            |            |       | 0:33 |      |
+| \_      Display file size |            |            |       | 0:57 |      |
+| \_      Tagging           |            |            |       | 5:11 |      |
+| \_      Person            |            |            |       | 7:50 |      |
+| \_      Editing Metadata  |            |            |       | 4:54 |      |
+| \_    Dialog              |            |            |  0:27 |      |      |
+| \_    Menu                |            |            |  5:57 |      |      |
+| \_    Initialization      |            |            |  1:45 |      |      |
 #+END:
 ** Thoughts that keep me up at night
 *** Performance
@@ -128,7 +129,7 @@ applications as well, I am good to go. So let's do this!
      going to have Folders as objects in their own right in the database.
      Not quite sure, yet, but I think I was a little over-ambitious with my
      first design.
-** GUI
+** GUI                                                                   :ui:
    :LOGBOOK:
    CLOCK: [2021-08-19 Do 02:02]--[2021-08-19 Do 03:08] =>  1:06
    CLOCK: [2021-08-09 Mo 22:42]--[2021-08-09 Mo 22:42] =>  0:00
@@ -164,6 +165,11 @@ applications as well, I am good to go. So let's do this!
     classes, either, as far as I can recall.
     Without custom models, this gets *very* tedious, which is one of the
     things I seriously dislike about GUI development.
+*** TODO Search                                                     :feature:
+    :LOGBOOK:
+    CLOCK: [2021-08-19 Do 19:51]--[2021-08-20 Fr 00:16] =>  4:25
+    :END:
+    It would be nice to be able to search in the Files View.
 *** TODO Context menus                                           :meditation:
     :LOGBOOK:
     CLOCK: [2021-08-14 Sa 18:38]--[2021-08-14 Sa 19:42] =>  1:04
@@ -227,8 +233,9 @@ applications as well, I am good to go. So let's do this!
      CLOCK: [2021-08-11 Mi 17:34]--[2021-08-11 Mi 18:12] =>  0:38
      :END:
 **** DONE Person
-     CLOSED: [2021-08-16 Mo 18:36]
+     CLOSED: [2021-08-19 Do 19:51]
      :LOGBOOK:
+     CLOCK: [2021-08-19 Do 19:25]--[2021-08-19 Do 19:51] =>  0:26
      CLOCK: [2021-08-13 Fr 18:25]--[2021-08-13 Fr 20:33] =>  2:08
      CLOCK: [2021-08-13 Fr 16:37]--[2021-08-13 Fr 18:12] =>  1:35
      CLOCK: [2021-08-13 Fr 10:16]--[2021-08-13 Fr 13:05] =>  2:49
