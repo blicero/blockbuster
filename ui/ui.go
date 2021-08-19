@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 19:33:49 krylon>
+// Time-stamp: <2021-08-20 00:02:39 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -29,6 +29,13 @@ import (
 )
 
 const (
+	statusBeacon uint = iota
+	statusPlayer
+	statusScan     // nolint: deadcode,unused,varcheck
+	statusInternet // nolint: deadcode,unused,varcheck
+)
+
+const (
 	qDepth        = 128
 	refInterval   = time.Second // nolint: deadcode
 	defaultPlayer = "/usr/bin/mpv"
@@ -49,18 +56,19 @@ type tabContent struct {
 // So, you've been warned, if you stick around, some interesting times
 // lie ahead!
 type GUI struct {
-	db       *database.Database
-	scanner  *tree.Scanner
-	log      *log.Logger
-	fileQ    chan *objects.File
-	lock     sync.RWMutex // nolint: structcheck,unused
-	win      *gtk.Window
-	mainBox  *gtk.Box
-	menubar  *gtk.MenuBar
-	notebook *gtk.Notebook
-	tabs     []tabContent
-	tags     objects.TagList
-	playCmd  []string
+	db        *database.Database
+	scanner   *tree.Scanner
+	log       *log.Logger
+	fileQ     chan *objects.File
+	lock      sync.RWMutex // nolint: structcheck,unused
+	win       *gtk.Window
+	mainBox   *gtk.Box
+	menubar   *gtk.MenuBar
+	notebook  *gtk.Notebook
+	statusbar *gtk.Statusbar
+	tabs      []tabContent
+	tags      objects.TagList
+	playCmd   []string
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
@@ -118,6 +126,10 @@ func Create() (*GUI, error) {
 		return nil, err
 	} else if g.notebook, err = gtk.NotebookNew(); err != nil {
 		g.log.Printf("[ERROR] Cannot create Notebook: %s\n",
+			err.Error())
+		return nil, err
+	} else if g.statusbar, err = gtk.StatusbarNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Statusbar: %s\n",
 			err.Error())
 		return nil, err
 	}
@@ -183,6 +195,7 @@ func Create() (*GUI, error) {
 
 	g.mainBox.PackStart(g.menubar, false, false, 0)
 	g.mainBox.PackStart(g.notebook, true, true, 0)
+	g.mainBox.PackStart(g.statusbar, false, false, 0)
 	g.win.Add(g.mainBox)
 	g.win.SetSizeRequest(960, 540)
 	g.win.SetTitle(fmt.Sprintf("%s %s",
@@ -203,8 +216,17 @@ func (g *GUI) ShowAndRun() {
 	go g.scanLoop()
 
 	g.win.ShowAll()
+	glib.TimeoutAdd(1000, g.beacon)
 	gtk.Main()
 } // func (g *GUI) ShowAndRun()
+
+func (g *GUI) beacon() bool {
+	var msg = fmt.Sprintf("Beacon is alive at %s",
+		time.Now().Format(common.TimestampFormatTime))
+	g.log.Printf("[TRACE] %s\n", msg)
+	g.statusbar.Push(statusBeacon, msg)
+	return true
+}
 
 func (g *GUI) scanLoop() {
 	var ticker = time.NewTicker(refInterval)
@@ -895,6 +917,9 @@ func (g *GUI) playFile(f *objects.File) {
 		g.displayMsg(msg)
 	}
 
+	var msg = fmt.Sprintf("Playing %s", f.DisplayTitle())
+	g.statusbar.Push(statusPlayer, msg)
+
 	go func() {
 		var e error
 		if e = cmd.Wait(); e != nil {
@@ -902,10 +927,19 @@ func (g *GUI) playFile(f *objects.File) {
 				f.DisplayTitle(),
 				e.Error())
 			g.log.Printf("[ERROR] %s\n", m)
-			glib.IdleAdd(func() bool { g.displayMsg(m); return false })
+			glib.IdleAdd(func() bool {
+				g.statusbar.Push(statusPlayer, m)
+				return false
+			})
 		} else {
 			g.log.Printf("[TRACE] Playing %s finished.\n",
 				f.DisplayTitle())
+			glib.IdleAdd(func() bool {
+				var m = fmt.Sprintf("Finished playing %s",
+					f.DisplayTitle())
+				g.statusbar.Push(statusPlayer, m)
+				return false
+			})
 		}
 	}()
 } // func (g *GUI) playFile(f *objects.File)
