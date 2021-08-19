@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 07. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 21:29:17 krylon>
+// Time-stamp: <2021-08-19 23:25:08 krylon>
 
 // Package common contains definitions used throughout the application
 package common
@@ -41,6 +41,7 @@ const (
 	TimestampFormat          = "2006-01-02 15:04:05"
 	TimestampFormatSubSecond = "2006-01-02 15:04:05.0000 MST"
 	TimestampFormatDate      = "2006-01-02"
+	TimestampFormatTime      = "15:04:05"
 )
 
 // LogLevels are the names of the log levels supported by the logger.
