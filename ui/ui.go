@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 02:54:25 krylon>
+// Time-stamp: <2021-08-19 09:58:56 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -384,8 +384,8 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 
 		if err = store.Set(
 			iter,
-			[]int{0, 1, 2, 5, 6, 7},
-			[]interface{}{f.ID, f.DisplayTitle(), sizeStr, astr, tstr, f.Path},
+			[]int{0, 1, 2, 3, 5, 6, 7},
+			[]interface{}{f.ID, f.DisplayTitle(), sizeStr, f.Year, astr, tstr, f.Path},
 		); err != nil {
 			g.log.Printf("[ERROR] Cannot add File %d (%s) to Store: %s\n",
 				f.ID,
