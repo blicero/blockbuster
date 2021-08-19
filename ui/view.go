@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-18 19:26:15 krylon>
+// Time-stamp: <2021-08-19 02:03:32 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -142,6 +142,10 @@ var viewList = []view{
 			column{
 				colType: glib.TYPE_STRING,
 				title:   "Tags",
+			},
+			column{
+				colType: glib.TYPE_STRING,
+				title:   "Path",
 			},
 		},
 	},
