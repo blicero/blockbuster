@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-20 22:34:01 krylon>
+// Time-stamp: <2021-08-21 00:49:27 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -31,6 +31,7 @@ import (
 const (
 	statusBeacon uint = iota
 	statusPlayer
+	statusSearch
 	statusScan     // nolint: deadcode,unused,varcheck
 	statusInternet // nolint: deadcode,unused,varcheck
 )
@@ -56,20 +57,23 @@ type tabContent struct {
 // So, you've been warned, if you stick around, some interesting times
 // lie ahead!
 type GUI struct {
-	db        *database.Database
-	scanner   *tree.Scanner
-	log       *log.Logger
-	fileQ     chan *objects.File
-	lock      sync.RWMutex // nolint: structcheck,unused
-	win       *gtk.Window
-	mainBox   *gtk.Box
-	menubar   *gtk.MenuBar
-	notebook  *gtk.Notebook
-	statusbar *gtk.Statusbar
-	tabs      []tabContent
-	tags      objects.TagList
-	playCmd   []string
-	curTab    int
+	db          *database.Database
+	scanner     *tree.Scanner
+	log         *log.Logger
+	fileQ       chan *objects.File
+	lock        sync.RWMutex // nolint: structcheck,unused
+	win         *gtk.Window
+	mainBox     *gtk.Box
+	menubar     *gtk.MenuBar
+	notebook    *gtk.Notebook
+	filterBox   *gtk.Box
+	filterLabel *gtk.Label
+	filterInput *gtk.Entry
+	statusbar   *gtk.Statusbar
+	tabs        []tabContent
+	tags        objects.TagList
+	playCmd     []string
+	curTab      int
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
@@ -131,6 +135,18 @@ func Create() (*GUI, error) {
 		return nil, err
 	} else if g.statusbar, err = gtk.StatusbarNew(); err != nil {
 		g.log.Printf("[ERROR] Cannot create Statusbar: %s\n",
+			err.Error())
+		return nil, err
+	} else if g.filterBox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 1); err != nil {
+		g.log.Printf("[ERROR] Cannot create Search box: %s\n",
+			err.Error())
+		return nil, err
+	} else if g.filterLabel, err = gtk.LabelNew("Filter:"); err != nil {
+		g.log.Printf("[ERROR] Cannot create Label for Search field: %s\n",
+			err.Error())
+		return nil, err
+	} else if g.filterInput, err = gtk.EntryNew(); err != nil {
+		g.log.Printf("[ERROR] Cannot create Search Entry: %s\n",
 			err.Error())
 		return nil, err
 	}
@@ -195,12 +211,18 @@ func Create() (*GUI, error) {
 
 	// g.notebook.Connect("change-current-page", g.changeTabHandler)
 	// g.notebook.Connect("select-page", g.changeTabHandler)
-	g.notebook.Connect("switch-page", g.changeTabHandler)
+	// g.notebook.Connect("switch-page", g.changeTabHandler)
 	// g.notebook.Connect("focus-tab", g.changeTabHandler)
+
+	g.filterInput.Connect("changed", g.handleSearch)
 
 	g.win.Connect("destroy", gtk.MainQuit)
 
+	g.filterBox.PackStart(g.filterLabel, false, false, 0)
+	g.filterBox.PackStart(g.filterInput, true, true, 0)
+
 	g.mainBox.PackStart(g.menubar, false, false, 0)
+	g.mainBox.PackStart(g.filterBox, false, false, 0)
 	g.mainBox.PackStart(g.notebook, true, true, 0)
 	g.mainBox.PackStart(g.statusbar, false, false, 0)
 	g.win.Add(g.mainBox)
@@ -236,6 +258,10 @@ func (g *GUI) beacon() bool {
 }
 
 func (g *GUI) scanLoop() {
+	defer func() {
+		g.log.Println("[INFO] GUI Scanner loop is quitting. So long, suckers!")
+	}()
+
 	var ticker = time.NewTicker(refInterval)
 	defer ticker.Stop()
 
@@ -341,18 +367,41 @@ func (g *GUI) reloadData() {
 	}
 } // func (g *GUI) reloadData()
 
-func (g *GUI) changeTabHandler() {
-	// var (
-	// 	err error
-	// 	txt string
-	// )
+func (g *GUI) handleSearch() {
+	var (
+		err error
+		txt string
+	)
 
-	var old = g.curTab
-	g.curTab = g.notebook.GetCurrentPage()
-	g.log.Printf("[DEBUG] Switch Tab %d -> %d\n",
-		old,
-		g.curTab)
-} // func (g *GUI) changeTabHandler()
+	if txt, err = g.filterInput.GetText(); err != nil {
+		g.log.Printf("[ERROR] Cannot get text from search widget: %s\n",
+			err.Error())
+		return
+	}
+
+	var msg = fmt.Sprintf("User is searching for %q\n",
+		txt)
+	g.log.Printf("[DEBUG] %s\n", msg)
+	g.statusbar.Push(statusSearch, msg)
+} // func (g *GUI) handleSearch()
+
+// func (g *GUI) changeTabHandler() {
+// 	// var (
+// 	// 	err error
+// 	// 	txt string
+// 	// )
+
+// 	var old = g.curTab
+// 	g.curTab = g.notebook.GetCurrentPage()
+// 	g.log.Printf("[DEBUG] Switch Tab %d -> %d\n",
+// 		old,
+// 		g.curTab)
+// } // func (g *GUI) changeTabHandler()
+
+// func (g *GUI) tabHandler(l *gtk.Label, raw interface{}) {
+// 	var s = l.GetLabel()
+// 	g.log.Printf("[DEBUG] Click on Label %q\n", s)
+// } // func (g *GUI) tabHandler(l *gtk.Label, raw interface{})
 
 func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	var store *gtk.ListStore
