@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-20 00:17:01 krylon>
+# Time-stamp: <2021-08-20 22:48:30 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,12 +33,12 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-20 Fr 00:16]
+#+CAPTION: Clock summary at [2021-08-20 Fr 22:48]
 | Headline                  | Time       |            |       |      |      |
 |---------------------------+------------+------------+-------+------+------|
-| *Total time*              | *2d 11:35* |            |       |      |      |
+| *Total time*              | *2d 12:32* |            |       |      |      |
 |---------------------------+------------+------------+-------+------+------|
-| *Blockbuster*             | *2d 11:35* |            |       |      |      |
+| *Blockbuster*             | *2d 12:32* |            |       |      |      |
 | \_  /Backend/             |            | /19:38/    |       |      |      |
 | \_    Database [1/2]      |            |            | 17:44 |      |      |
 | \_      Tags              |            |            |       | 1:31 |      |
@@ -48,8 +48,8 @@ applications as well, I am good to go. So let's do this!
 | \_      URLs              |            |            |       | 3:14 |      |
 | \_    Scanner             |            |            |  1:54 |      |      |
 | \_      Folders           |            |            |       | 1:54 |      |
-| \_  /GUI/                 |            | /1d 15:57/ |       |      |      |
-| \_    Search              |            |            |  4:25 |      |      |
+| \_  /GUI/                 |            | /1d 16:54/ |       |      |      |
+| \_    Search              |            |            |  5:22 |      |      |
 | \_    Context menus       |            |            |  1:04 |      |      |
 | \_    Folders             |            |            |  0:25 |      |      |
 | \_    Files [4/5]         |            |            | 19:25 |      |      |
@@ -167,34 +167,44 @@ applications as well, I am good to go. So let's do this!
     things I seriously dislike about GUI development.
 *** TODO Search                                                     :feature:
     :LOGBOOK:
+    CLOCK: [2021-08-20 Fr 21:51]--[2021-08-20 Fr 22:48] =>  0:57
     CLOCK: [2021-08-19 Do 19:51]--[2021-08-20 Fr 00:16] =>  4:25
     :END:
     It would be nice to be able to search in the Files View.
-*** TODO Context menus                                           :meditation:
+    ...
+    Man, this is more complex than I had imagined. :(
+*** DONE Context menus                                           :meditation:
+    CLOSED: [2021-08-20 Fr 21:47]
     :LOGBOOK:
     CLOCK: [2021-08-14 Sa 18:38]--[2021-08-14 Sa 19:42] =>  1:04
     :END:
-     Now that I start working on the context menu for the Person view, I
-     realize I'd like to present different menus depending on what the user
-     clicks on, i.e. a Person or a File. 
-     And I already *have* a File menu. Can I somehow factor out the code that
-     would be common to both cases?
-     Seeing as to how I will add more context menus, this is probably something
-     I should figure out now.
-     ...
-     After thinking about this for a bit, I realized the context menu /is/
-     specific to the TreeView.
-     For example, let's say we have a Person that is linked as an actor/actress
-     to a File. In the Person view, we expand the subtree with the Files, and
-     then we do a right-click on the File. Does it make sense to show the same
-     menu as in the File view?
-     Let's say, we add a Tag to the file from the Person view. Then we want to
-     update the corresponding node in the File view. *That* is not at all
-     trivial without a custom TreeModel (which apparently is not possible in
-     Go). It's doable, but I suspect it is very, very tedious.
+    [2021-08-20 Fr 21:47]
+    I closed this item, because I figured out the general mechanisms I want to
+    use for context menus. There is still quite a bit of tedious
+    detail-oriented labor to be done; but the big problem of how to approach
+    this beast I consider solved. 
+    
+    Now that I start working on the context menu for the Person view, I
+    realize I'd like to present different menus depending on what the user
+    clicks on, i.e. a Person or a File. 
+    And I already *have* a File menu. Can I somehow factor out the code that
+    would be common to both cases?
+    Seeing as to how I will add more context menus, this is probably something
+    I should figure out now.
+    ...
+    After thinking about this for a bit, I realized the context menu /is/
+    specific to the TreeView.
+    For example, let's say we have a Person that is linked as an actor/actress
+    to a File. In the Person view, we expand the subtree with the Files, and
+    then we do a right-click on the File. Does it make sense to show the same
+    menu as in the File view?
+    Let's say, we add a Tag to the file from the Person view. Then we want to
+    update the corresponding node in the File view. *That* is not at all
+    trivial without a custom TreeModel (which apparently is not possible in
+    Go). It's doable, but I suspect it is very, very tedious.
 
-     But it /does/ make sense to display a menu with different options,
-     e.g. play the File or unlink the Person from the File.
+    But it /does/ make sense to display a menu with different options,
+    e.g. play the File or unlink the Person from the File.
 *** DONE Folders
     CLOSED: [2021-08-09 Mo 20:53]
     :LOGBOOK:
@@ -326,3 +336,13 @@ applications as well, I am good to go. So let's do this!
     TreeStores/ListStores is /really/ tedious, and if I want to ever change or
     extend this (which I almost certainly will), I need to find a way to make
     the whole process more ... data-driven, less reptetitive.
+** Bugs                                                                 :bug:
+*** TODO [#B] UI freezes
+    Occasionally, the UI will freeze. The GLib timer that updates the beacon
+    stops getting called as well, so I am fairly certain the problem is in the
+    UI layer.
+    I am not sure if this is a problem with Gtk3, the Go bindings or with my
+    own code.
+    I should instrument all of my callbacks with tracing code so I can see if
+    maybe some callback gets stuck or deadlocked or something.
+    At the moment I have no idea if it's my fault or some library's.
