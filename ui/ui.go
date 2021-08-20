@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-20 00:02:39 krylon>
+// Time-stamp: <2021-08-20 22:34:01 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -69,6 +69,7 @@ type GUI struct {
 	tabs      []tabContent
 	tags      objects.TagList
 	playCmd   []string
+	curTab    int
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
@@ -187,9 +188,15 @@ func Create() (*GUI, error) {
 	// had sensible context menus, so I could right-click any object in a
 	// tree view and get a meaningful list of things to do.
 
+	g.curTab = 0
 	g.tabs[tiFile].view.Connect("button-press-event", g.handleFileListClick)
 	g.tabs[tiPerson].view.Connect("button-press-event", g.handlePersonListClick)
 	// g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
+
+	// g.notebook.Connect("change-current-page", g.changeTabHandler)
+	// g.notebook.Connect("select-page", g.changeTabHandler)
+	g.notebook.Connect("switch-page", g.changeTabHandler)
+	// g.notebook.Connect("focus-tab", g.changeTabHandler)
 
 	g.win.Connect("destroy", gtk.MainQuit)
 
@@ -323,18 +330,6 @@ func (g *GUI) clearData(idx tabIdx) {
 
 func (g *GUI) reloadData() {
 	for idx := range g.tabs {
-		// switch s := c.store.(type) {
-		// case *gtk.ListStore:
-		// 	s.Clear()
-		// case *gtk.TreeStore:
-		// 	s.Clear()
-		// default:
-		// 	var msg = fmt.Sprintf("Unexpected type for TreeModel: %T",
-		// 		c.store)
-		// 	g.log.Printf("[CANTHAPPEN] %s\n", msg)
-		// 	g.displayMsg(msg)
-		// 	return
-		// }
 		g.clearData(tabIdx(idx))
 	}
 
@@ -345,6 +340,19 @@ func (g *GUI) reloadData() {
 		g.displayMsg(msg)
 	}
 } // func (g *GUI) reloadData()
+
+func (g *GUI) changeTabHandler() {
+	// var (
+	// 	err error
+	// 	txt string
+	// )
+
+	var old = g.curTab
+	g.curTab = g.notebook.GetCurrentPage()
+	g.log.Printf("[DEBUG] Switch Tab %d -> %d\n",
+		old,
+		g.curTab)
+} // func (g *GUI) changeTabHandler()
 
 func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	var store *gtk.ListStore
