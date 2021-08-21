@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 00:49:27 krylon>
+// Time-stamp: <2021-08-21 20:19:10 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -31,7 +31,7 @@ import (
 const (
 	statusBeacon uint = iota
 	statusPlayer
-	statusSearch
+	statusSearch   // nolint: deadcode,unused,varcheck
 	statusScan     // nolint: deadcode,unused,varcheck
 	statusInternet // nolint: deadcode,unused,varcheck
 )
@@ -44,9 +44,13 @@ const (
 )
 
 type tabContent struct {
-	store gtk.ITreeModel
-	view  *gtk.TreeView
-	scr   *gtk.ScrolledWindow
+	vbox   *gtk.Box
+	sbox   *gtk.Box
+	lbl    *gtk.Label
+	search *gtk.Entry
+	store  gtk.ITreeModel
+	view   *gtk.TreeView
+	scr    *gtk.ScrolledWindow
 }
 
 // GUI is the ... well, GUI of the application.
@@ -57,23 +61,19 @@ type tabContent struct {
 // So, you've been warned, if you stick around, some interesting times
 // lie ahead!
 type GUI struct {
-	db          *database.Database
-	scanner     *tree.Scanner
-	log         *log.Logger
-	fileQ       chan *objects.File
-	lock        sync.RWMutex // nolint: structcheck,unused
-	win         *gtk.Window
-	mainBox     *gtk.Box
-	menubar     *gtk.MenuBar
-	notebook    *gtk.Notebook
-	filterBox   *gtk.Box
-	filterLabel *gtk.Label
-	filterInput *gtk.Entry
-	statusbar   *gtk.Statusbar
-	tabs        []tabContent
-	tags        objects.TagList
-	playCmd     []string
-	curTab      int
+	db        *database.Database
+	scanner   *tree.Scanner
+	log       *log.Logger
+	fileQ     chan *objects.File
+	lock      sync.RWMutex // nolint: structcheck,unused
+	win       *gtk.Window
+	mainBox   *gtk.Box
+	menubar   *gtk.MenuBar
+	notebook  *gtk.Notebook
+	statusbar *gtk.Statusbar
+	tabs      []tabContent
+	tags      objects.TagList
+	playCmd   []string
 }
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
@@ -137,18 +137,6 @@ func Create() (*GUI, error) {
 		g.log.Printf("[ERROR] Cannot create Statusbar: %s\n",
 			err.Error())
 		return nil, err
-	} else if g.filterBox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 1); err != nil {
-		g.log.Printf("[ERROR] Cannot create Search box: %s\n",
-			err.Error())
-		return nil, err
-	} else if g.filterLabel, err = gtk.LabelNew("Filter:"); err != nil {
-		g.log.Printf("[ERROR] Cannot create Label for Search field: %s\n",
-			err.Error())
-		return nil, err
-	} else if g.filterInput, err = gtk.EntryNew(); err != nil {
-		g.log.Printf("[ERROR] Cannot create Search Entry: %s\n",
-			err.Error())
-		return nil, err
 	}
 
 	if err = g.initMenu(); err != nil {
@@ -186,11 +174,36 @@ func Create() (*GUI, error) {
 				v.title,
 				err.Error())
 			return nil, err
+		} else if tab.vbox, err = gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 1); err != nil {
+			g.log.Printf("[ERROR] Cannot create vbox for %q: %s\n",
+				v.title,
+				err.Error())
+			return nil, err
+		} else if tab.sbox, err = gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 1); err != nil {
+			g.log.Printf("[ERROR] Cannot create sbox for %q: %s\n",
+				v.title,
+				err.Error())
+			return nil, err
+		} else if tab.lbl, err = gtk.LabelNew("Filter:"); err != nil {
+			g.log.Printf("[ERROR] Cannot create Filter Label for %s: %s\n",
+				v.title,
+				err.Error())
+			return nil, err
+		} else if tab.search, err = gtk.EntryNew(); err != nil {
+			g.log.Printf("[ERROR] Cannot create search entry for %s: %s\n",
+				v.title,
+				err.Error())
+			return nil, err
 		}
+
+		tab.sbox.PackStart(tab.lbl, false, false, 1)
+		tab.sbox.PackStart(tab.search, true, true, 1)
+		tab.vbox.PackStart(tab.sbox, false, false, 1)
+		tab.vbox.PackStart(tab.scr, true, true, 1)
 
 		g.tabs[tIdx] = tab
 		tab.scr.Add(tab.view)
-		g.notebook.AppendPage(tab.scr, lbl)
+		g.notebook.AppendPage(tab.vbox, lbl)
 
 	}
 
@@ -204,7 +217,6 @@ func Create() (*GUI, error) {
 	// had sensible context menus, so I could right-click any object in a
 	// tree view and get a meaningful list of things to do.
 
-	g.curTab = 0
 	g.tabs[tiFile].view.Connect("button-press-event", g.handleFileListClick)
 	g.tabs[tiPerson].view.Connect("button-press-event", g.handlePersonListClick)
 	// g.tabs[tiFolder].view.Connect("button-press-event", g.handleFileListClick)
@@ -214,15 +226,15 @@ func Create() (*GUI, error) {
 	// g.notebook.Connect("switch-page", g.changeTabHandler)
 	// g.notebook.Connect("focus-tab", g.changeTabHandler)
 
-	g.filterInput.Connect("changed", g.handleSearch)
+	// g.filterInput.Connect("changed", g.handleSearch)
 
 	g.win.Connect("destroy", gtk.MainQuit)
 
-	g.filterBox.PackStart(g.filterLabel, false, false, 0)
-	g.filterBox.PackStart(g.filterInput, true, true, 0)
+	// g.filterBox.PackStart(g.filterLabel, false, false, 0)
+	// g.filterBox.PackStart(g.filterInput, true, true, 0)
 
 	g.mainBox.PackStart(g.menubar, false, false, 0)
-	g.mainBox.PackStart(g.filterBox, false, false, 0)
+	// g.mainBox.PackStart(g.filterBox, false, false, 0)
 	g.mainBox.PackStart(g.notebook, true, true, 0)
 	g.mainBox.PackStart(g.statusbar, false, false, 0)
 	g.win.Add(g.mainBox)
@@ -367,23 +379,25 @@ func (g *GUI) reloadData() {
 	}
 } // func (g *GUI) reloadData()
 
-func (g *GUI) handleSearch() {
-	var (
-		err error
-		txt string
-	)
+// func (g *GUI) handleSearch() {
+// 	var (
+// 		err error
+// 		txt string
+// 	)
 
-	if txt, err = g.filterInput.GetText(); err != nil {
-		g.log.Printf("[ERROR] Cannot get text from search widget: %s\n",
-			err.Error())
-		return
-	}
+// 	if txt, err = g.filterInput.GetText(); err != nil {
+// 		g.log.Printf("[ERROR] Cannot get text from search widget: %s\n",
+// 			err.Error())
+// 		return
+// 	}
 
-	var msg = fmt.Sprintf("User is searching for %q\n",
-		txt)
-	g.log.Printf("[DEBUG] %s\n", msg)
-	g.statusbar.Push(statusSearch, msg)
-} // func (g *GUI) handleSearch()
+// 	g.filterStr = txt
+
+// 	var msg = fmt.Sprintf("User is searching for %q\n",
+// 		txt)
+// 	g.log.Printf("[DEBUG] %s\n", msg)
+// 	g.statusbar.Push(statusSearch, msg)
+// } // func (g *GUI) handleSearch()
 
 // func (g *GUI) changeTabHandler() {
 // 	// var (
@@ -860,6 +874,7 @@ func (g *GUI) handlePersonAdd() {
 			err.Error())
 		return
 	} else if nameLbl, err = gtk.LabelNew("Name:"); err != nil {
+
 		g.log.Printf("[ERROR] Cannot create name Label for AddPerson Dialog: %s\n",
 			err.Error())
 		return
