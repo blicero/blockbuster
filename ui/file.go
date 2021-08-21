@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 19:39:10 krylon>
+// Time-stamp: <2021-08-21 20:51:43 krylon>
 
 package ui
 
@@ -14,12 +14,14 @@ import (
 
 	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/objects"
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
+	krylib.Trace()
 	var be = gdk.EventButtonNewFromEvent(evt)
 
 	if be.Button() != gdk.BUTTON_SECONDARY {
@@ -128,6 +130,7 @@ ERROR:
 } // func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event)
 
 func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err                                    error
 		msg                                    string
@@ -189,11 +192,12 @@ func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu,
 	return contextMenu, nil
 ERROR:
 	g.log.Printf("[ERROR] %s\n", msg)
-	// g.displayMsg(msg)
+	g.displayMsg(msg)
 	return nil, err
 } // func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err  error
 		msg  string
@@ -241,7 +245,9 @@ ERROR:
 } // func (g *GUI) mkFileTagMenu(f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects.File, t *objects.Tag) func() {
+	krylib.Trace()
 	return func() {
+		krylib.Trace()
 		var (
 			err error
 			msg string
@@ -274,7 +280,9 @@ func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects
 } // func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, f *objects.File, t *objects.Tag) func()
 
 func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() bool {
+	krylib.Trace()
 	return func() bool {
+		krylib.Trace()
 		var (
 			err       error
 			msg, tstr string
@@ -324,6 +332,7 @@ func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() b
 } // func mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func () bool
 
 func (g *GUI) mkFileActorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err           error
 		msg           string
@@ -384,7 +393,9 @@ ERROR:
 } // func (g *GUI) mkFileActorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
+	krylib.Trace()
 	return func() {
+		krylib.Trace()
 		var (
 			err error
 			msg string
@@ -411,6 +422,7 @@ func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objec
 			glib.IdleAdd(g.makeNewActorHandler(p, f))
 		} else {
 			glib.IdleAdd(func() bool {
+				krylib.Trace()
 				g.removeActor(p, f)
 				return false
 			})
@@ -424,7 +436,9 @@ func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objec
 } // func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func()
 
 func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
+	krylib.Trace()
 	return func() bool {
+		krylib.Trace()
 		var (
 			err       error
 			msg, astr string
@@ -534,7 +548,9 @@ ERROR:
 } // func (g *GUI) mkFileDirectorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
+	krylib.Trace()
 	return func() {
+		krylib.Trace()
 		var (
 			err error
 			msg string
@@ -574,7 +590,9 @@ func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *ob
 } // func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func()
 
 func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
+	krylib.Trace()
 	return func() bool {
+		krylib.Trace()
 		var (
 			err       error
 			msg, astr string
@@ -624,11 +642,13 @@ func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, f *objects.File) func
 } // func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
 
 func (g *GUI) mkFileEditHandler(colIdx int) func(*gtk.CellRendererText, string, string) {
+	krylib.Trace()
 	if common.Debug {
 		g.log.Printf("[DEBUG] Create FileView edit handler for column %d\n", colIdx)
 	}
 
 	return func(r *gtk.CellRendererText, pStr, text string) {
+		krylib.Trace()
 		var (
 			err       error
 			msg       string

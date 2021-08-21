@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 19. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 19:34:35 krylon>
+// Time-stamp: <2021-08-21 20:47:44 krylon>
 
 package ui
 
@@ -10,11 +10,13 @@ import (
 	"fmt"
 
 	"github.com/blicero/blockbuster/objects"
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func (g *GUI) removeDirector(p *objects.Person, f *objects.File) {
+	krylib.Trace()
 	var (
 		err               error
 		msg, title        string

@@ -2,15 +2,17 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-18 18:23:14 krylon>
+// Time-stamp: <2021-08-21 20:51:59 krylon>
 
 package ui
 
 import (
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func createCol(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererText, error) {
+	krylib.Trace()
 	renderer, err := gtk.CellRendererTextNew()
 	if err != nil {
 		return nil, nil, err
@@ -27,6 +29,7 @@ func createCol(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererText
 } // func createCol(title string, id int) (*gtk.TreeViewColumn, *gtk.CellRendererText, error)
 
 func (g *GUI) displayMsg(msg string) {
+	krylib.Trace()
 	var (
 		err error
 		dlg *gtk.Dialog

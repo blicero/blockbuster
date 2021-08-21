@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-16 19:07:57 krylon>
+// Time-stamp: <2021-08-21 20:55:09 krylon>
 
 package ui
 
@@ -12,12 +12,14 @@ import (
 	"os/exec"
 
 	"github.com/blicero/blockbuster/objects"
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func (g *GUI) loadPeople() bool {
+	krylib.Trace()
 	g.clearData(tiPerson)
 
 	var (
@@ -78,6 +80,7 @@ ERROR:
 } // func (g *GUI) loadPeople() bool
 
 func (g *GUI) handlePersonListClick(view *gtk.TreeView, evt *gdk.Event) {
+	krylib.Trace()
 	var be = gdk.EventButtonNewFromEvent(evt)
 
 	if be.Button() != gdk.BUTTON_SECONDARY {
@@ -208,6 +211,7 @@ ERROR:
 } // func (g *GUI) handlePersonListClick(view *gtk.TreeView, evt *gdk.Event)
 
 func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err                              error
 		menu, urlMenu                    *gtk.Menu
@@ -242,6 +246,7 @@ func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.M
 } // func (g *GUI) mkPersonContextMenu(path *gtk.TreePath, p *objects.Person) (*gtk.Menu, error)
 
 func (g *GUI) getPersonLinks(p *objects.Person) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err   error
 		msg   string
@@ -287,8 +292,10 @@ ERROR:
 } // func (g *GUI) getPersonLinks(p *objects.Person) ([]*gtk.MenuItem, error)
 
 func (g *GUI) mkURLHandler(l *objects.Link) func() {
+	krylib.Trace()
 	const urlOpenCmd = "xdg-open"
 	return func() {
+		krylib.Trace()
 		var (
 			err error
 			cmd *exec.Cmd
@@ -311,6 +318,7 @@ func (g *GUI) mkURLHandler(l *objects.Link) func() {
 }
 
 func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	krylib.Trace()
 	var (
 		err      error
 		msg      string
@@ -337,12 +345,14 @@ func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk
 
 ERROR:
 	g.log.Printf("[ERROR] %s\n", msg)
-	// g.displayMsg(msg)
+	g.displayMsg(msg)
 	return nil, err
 } // func (g *GUI) mkPersonFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error)
 
 func (g *GUI) mkPersonAddURLHandler(p *objects.Person) func() {
+	krylib.Trace()
 	return func() {
+		krylib.Trace()
 		var (
 			err                    error
 			s                      string

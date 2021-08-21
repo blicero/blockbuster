@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 10. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-13 21:21:40 krylon>
+// Time-stamp: <2021-08-21 20:55:32 krylon>
 
 package ui
 
@@ -12,10 +12,12 @@ import (
 
 	"github.com/blicero/blockbuster/common"
 	"github.com/blicero/blockbuster/objects"
+	"github.com/blicero/krylib"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 func (g *GUI) tagAdd(t *objects.Tag) error {
+	krylib.Trace()
 	var (
 		err   error
 		model *gtk.TreeStore
@@ -45,6 +47,7 @@ func (g *GUI) tagAdd(t *objects.Tag) error {
 } // func (g *GUI) tagAdd(t *objects.Tag) error
 
 func (g *GUI) loadTagView() bool {
+	krylib.Trace()
 	var (
 		err   error
 		msg   string
