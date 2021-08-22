@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 19. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:47:44 krylon>
+// Time-stamp: <2021-08-21 22:56:49 krylon>
 
 package ui
 
@@ -17,6 +17,8 @@ import (
 
 func (g *GUI) removeDirector(p *objects.Person, f *objects.File) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err               error
 		msg, title        string

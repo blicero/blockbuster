@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:55:09 krylon>
+// Time-stamp: <2021-08-21 23:11:03 krylon>
 
 package ui
 
@@ -351,8 +351,12 @@ ERROR:
 
 func (g *GUI) mkPersonAddURLHandler(p *objects.Person) func() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err                    error
 			s                      string

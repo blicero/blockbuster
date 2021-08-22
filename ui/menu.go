@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 09. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:56:56 krylon>
+// Time-stamp: <2021-08-21 23:09:09 krylon>
 
 package ui
 
@@ -16,6 +16,8 @@ import (
 
 func (g *GUI) initMenu() error {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	///////////////////////////////////////////////////////////////////////
 	////// Menus //////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////

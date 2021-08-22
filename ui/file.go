@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 11. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:51:43 krylon>
+// Time-stamp: <2021-08-21 23:08:06 krylon>
 
 package ui
 
@@ -22,6 +22,8 @@ import (
 
 func (g *GUI) handleFileListClick(view *gtk.TreeView, evt *gdk.Event) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var be = gdk.EventButtonNewFromEvent(evt)
 
 	if be.Button() != gdk.BUTTON_SECONDARY {
@@ -131,6 +133,8 @@ ERROR:
 
 func (g *GUI) mkFileContextMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err                                    error
 		msg                                    string
@@ -198,6 +202,8 @@ ERROR:
 
 func (g *GUI) mkFileTagMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err  error
 		msg  string
@@ -246,8 +252,12 @@ ERROR:
 
 func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects.File, t *objects.Tag) func() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err error
 			msg string
@@ -281,8 +291,12 @@ func (g *GUI) mkFileTagToggleHandler(path *gtk.TreePath, tagged bool, f *objects
 
 func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() bool {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err       error
 			msg, tstr string
@@ -333,6 +347,8 @@ func (g *GUI) mkFileTagListUpdater(path *gtk.TreePath, f *objects.File) func() b
 
 func (g *GUI) mkFileActorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err           error
 		msg           string
@@ -394,8 +410,12 @@ ERROR:
 
 func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err error
 			msg string
@@ -423,6 +443,8 @@ func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objec
 		} else {
 			glib.IdleAdd(func() bool {
 				krylib.Trace()
+				defer g.log.Printf("[TRACE] EXIT %s\n",
+					krylib.TraceInfo())
 				g.removeActor(p, f)
 				return false
 			})
@@ -437,8 +459,12 @@ func (g *GUI) mkFileActorToggleHandler(path *gtk.TreePath, linked bool, f *objec
 
 func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() bool {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err       error
 			msg, astr string
@@ -488,6 +514,9 @@ func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, f *objects.File) func() 
 } // func (g *GUI) mkFileActorListUpdate(path *gtk.TreePath, p *objects.Person) func () bool
 
 func (g *GUI) mkFileDirectorMenu(path *gtk.TreePath, f *objects.File) (*gtk.Menu, error) {
+	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err           error
 		msg           string
@@ -549,8 +578,12 @@ ERROR:
 
 func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *objects.File, p *objects.Person) func() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err error
 			msg string
@@ -591,8 +624,12 @@ func (g *GUI) mkFileDirectorToggleHandler(path *gtk.TreePath, linked bool, f *ob
 
 func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() bool {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err       error
 			msg, astr string
@@ -643,12 +680,16 @@ func (g *GUI) mkFileDirectorListUpdate(path *gtk.TreePath, f *objects.File) func
 
 func (g *GUI) mkFileEditHandler(colIdx int) func(*gtk.CellRendererText, string, string) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	if common.Debug {
 		g.log.Printf("[DEBUG] Create FileView edit handler for column %d\n", colIdx)
 	}
 
 	return func(r *gtk.CellRendererText, pStr, text string) {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err       error
 			msg       string

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 21:01:07 krylon>
+// Time-stamp: <2021-08-21 23:16:37 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -78,6 +78,9 @@ type GUI struct {
 
 // Create creates a new GUI. You didn't see *that* coming, now, did you?
 func Create() (*GUI, error) {
+	krylib.Trace()
+	defer fmt.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err          error
 		playerString string
@@ -238,6 +241,8 @@ func Create() (*GUI, error) {
 // ShowAndRun displays the GUI and runs the Gtk event loop.
 func (g *GUI) ShowAndRun() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	if err := g.loadData(); err != nil {
 		g.log.Printf("[ERROR] Cannot load data: %s\n",
 			err.Error())
@@ -251,21 +256,10 @@ func (g *GUI) ShowAndRun() {
 	gtk.Main()
 } // func (g *GUI) ShowAndRun()
 
-// func (g *GUI) beacon() bool {
-// 	krylib.Trace()
-// 	var msg = fmt.Sprintf("Beacon is alive at %s",
-// 		time.Now().Format(common.TimestampFormatTime))
-// 	g.log.Printf("[TRACE] %s\n", msg)
-// 	g.statusbar.Push(statusBeacon, msg)
-// 	return true
-// }
-
 func (g *GUI) scanLoop() {
 	krylib.Trace()
-	defer func() {
-		krylib.Trace()
-		g.log.Println("[INFO] GUI Scanner loop is quitting. So long, suckers!")
-	}()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 
 	var ticker = time.NewTicker(refInterval)
 	defer ticker.Stop()
@@ -293,6 +287,8 @@ func (g *GUI) loadData() error {
 	)
 
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 
 	if fileList, err = g.db.FileGetAll(); err != nil {
 		g.log.Printf("[ERROR] Cannot get list of all Files: %s\n",
@@ -348,6 +344,8 @@ func (g *GUI) loadData() error {
 
 func (g *GUI) clearData(idx tabIdx) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	switch s := g.tabs[idx].store.(type) {
 	case *gtk.ListStore:
 		s.Clear()
@@ -364,6 +362,8 @@ func (g *GUI) clearData(idx tabIdx) {
 
 func (g *GUI) reloadData() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	for idx := range g.tabs {
 		g.clearData(tabIdx(idx))
 	}
@@ -378,6 +378,8 @@ func (g *GUI) reloadData() {
 
 func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var store *gtk.ListStore
 
 	switch t := g.tabs[tiFile].store.(type) {
@@ -453,6 +455,8 @@ func (g *GUI) makeNewFileHandler(f *objects.File) func() bool {
 
 func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var store *gtk.ListStore
 
 	switch t := g.tabs[tiFolder].store.(type) {
@@ -488,8 +492,12 @@ func (g *GUI) makeNewFolderHandler(f *objects.Folder) func() bool {
 
 func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() bool {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err         error
 			msg         string
@@ -556,8 +564,12 @@ func (g *GUI) makeNewActorHandler(p *objects.Person, f *objects.File) func() boo
 
 func (g *GUI) makeNewDirectorHandler(p *objects.Person, f *objects.File) func() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	return func() bool {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var (
 			err         error
 			msg         string
@@ -624,6 +636,8 @@ func (g *GUI) makeNewDirectorHandler(p *objects.Person, f *objects.File) func() 
 
 func (g *GUI) promptScanFolder() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err error
 		dlg *gtk.FileChooserDialog
@@ -670,6 +684,8 @@ func (g *GUI) promptScanFolder() {
 
 func (g *GUI) handleTagAdd() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err        error
 		dlg        *gtk.Dialog
@@ -790,6 +806,8 @@ func (g *GUI) handleTagAdd() {
 
 func (g *GUI) handlePersonAdd() {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err              error
 		dlg              *gtk.Dialog
@@ -938,6 +956,9 @@ func (g *GUI) handlePersonAdd() {
 
 func (g *GUI) playFile(f *objects.File) {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
+
 	var (
 		err  error
 		cmd  *exec.Cmd
@@ -964,6 +985,8 @@ func (g *GUI) playFile(f *objects.File) {
 
 	go func() {
 		krylib.Trace()
+		defer g.log.Printf("[TRACE] EXIT %s\n",
+			krylib.TraceInfo())
 		var e error
 		if e = cmd.Wait(); e != nil {
 			var m = fmt.Sprintf("Error playing %q: %s",
@@ -980,6 +1003,8 @@ func (g *GUI) playFile(f *objects.File) {
 				f.DisplayTitle())
 			glib.IdleAdd(func() bool {
 				krylib.Trace()
+				defer g.log.Printf("[TRACE] EXIT %s\n",
+					krylib.TraceInfo())
 				var m = fmt.Sprintf("Finished playing %s",
 					f.DisplayTitle())
 				g.statusbar.Push(statusPlayer, m)

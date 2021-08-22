@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 10. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:55:32 krylon>
+// Time-stamp: <2021-08-21 23:11:45 krylon>
 
 package ui
 
@@ -18,6 +18,9 @@ import (
 
 func (g *GUI) tagAdd(t *objects.Tag) error {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
+
 	var (
 		err   error
 		model *gtk.TreeStore
@@ -48,6 +51,8 @@ func (g *GUI) tagAdd(t *objects.Tag) error {
 
 func (g *GUI) loadTagView() bool {
 	krylib.Trace()
+	defer g.log.Printf("[TRACE] EXIT %s\n",
+		krylib.TraceInfo())
 	var (
 		err   error
 		msg   string

@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 06. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 20:56:29 krylon>
+// Time-stamp: <2021-08-21 23:17:14 krylon>
 
 // The GUI makes generous use of Gtk's TreeView.
 // While TreeView is very versatile and awesome, it can also be very tedious to
@@ -54,6 +54,7 @@ type view struct {
 
 func (v *view) typeList() []glib.Type {
 	krylib.Trace()
+	defer krylib.Trace()
 	var res = make([]glib.Type, len(v.columns))
 
 	for i, c := range v.columns {
@@ -65,6 +66,7 @@ func (v *view) typeList() []glib.Type {
 
 func (v *view) create(handlerFactory cellEditHandlerFactory) (gtk.ITreeModel, *gtk.TreeView, error) {
 	krylib.Trace()
+	defer krylib.Trace()
 	var (
 		err   error
 		cols  []glib.Type
