@@ -1,9 +1,9 @@
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
-github.com/blicero/krylib v0.0.0-20210813213829-7ef73853b370 h1:NBAiL+Z3Enh1DslDhO9RoZ3NJvw5RgLat8PHb/bOTVI=
-github.com/blicero/krylib v0.0.0-20210813213829-7ef73853b370/go.mod h1:HoeVtZ3wPyRWgB76KOcQ+HdtScp4V9DB76gOgN/YOcw=
-github.com/gotk3/gotk3 v0.6.1 h1:GJ400a0ecEEWrzjBvzBzH+pB/esEMIGdB9zPSmBdoeo=
-github.com/gotk3/gotk3 v0.6.1/go.mod h1:/hqFpkNa9T3JgNAE2fLvCdov7c5bw//FHNZrZ3Uv9/Q=
+github.com/blicero/krylib v0.0.0-20210821183726-381c76f977eb h1:tIKHCTcjhmzpkHlS3Nf0E0n0VRgYEjx12fG7QiBaf7g=
+github.com/blicero/krylib v0.0.0-20210821183726-381c76f977eb/go.mod h1:HoeVtZ3wPyRWgB76KOcQ+HdtScp4V9DB76gOgN/YOcw=
+github.com/gotk3/gotk3 v0.6.0 h1:Aqlq4/6VabNwtCyA9M9zFNad5yHAqCi5heWnZ9y+3dA=
+github.com/gotk3/gotk3 v0.6.0/go.mod h1:/hqFpkNa9T3JgNAE2fLvCdov7c5bw//FHNZrZ3Uv9/Q=
 github.com/hashicorp/logutils v1.0.0 h1:dLEQVugN8vlakKOUE3ihGLTZJRB4j+M2cdTm/ORI65Y=
 github.com/hashicorp/logutils v1.0.0/go.mod h1:QIAnNjmIWmVIIkWDTG1z5v++HQmx9WQRO+LraFDTW64=
 github.com/mattn/go-sqlite3 v1.14.8 h1:gDp86IdQsN/xWjIEmr9MF6o9mpksUgh0fu+9ByFxzIU=
