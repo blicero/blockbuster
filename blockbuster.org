@@ -1,5 +1,5 @@
 # -*- mode: org; fill-column: 78; -*-
-# Time-stamp: <2021-08-21 20:30:17 krylon>
+# Time-stamp: <2021-08-23 23:01:30 krylon>
 #
 #+TAGS: go(g) internals(i) ui(u) bug(b) feature(f)
 #+TAGS: database(d) design(e), meditation(m)
@@ -33,12 +33,12 @@ applications as well, I am good to go. So let's do this!
    application, and have emacs render me a nice table to see how I wasted my
    time. Behold:
 #+BEGIN: clocktable :scope file :maxlevel 202 :emphasize t
-#+CAPTION: Clock summary at [2021-08-21 Sa 20:29]
+#+CAPTION: Clock summary at [2021-08-23 Mo 23:01]
 | Headline                  | Time       |            |       |      |      |
 |---------------------------+------------+------------+-------+------+------|
-| *Total time*              | *2d 15:21* |            |       |      |      |
+| *Total time*              | *2d 19:43* |            |       |      |      |
 |---------------------------+------------+------------+-------+------+------|
-| *Blockbuster*             | *2d 15:21* |            |       |      |      |
+| *Blockbuster*             | *2d 19:43* |            |       |      |      |
 | \_  /Backend/             |            | /19:38/    |       |      |      |
 | \_    Database [1/2]      |            |            | 17:44 |      |      |
 | \_      Tags              |            |            |       | 1:31 |      |
@@ -61,6 +61,8 @@ applications as well, I am good to go. So let's do this!
 | \_    Dialog              |            |            |  0:27 |      |      |
 | \_    Menu                |            |            |  5:57 |      |      |
 | \_    Initialization      |            |            |  1:45 |      |      |
+| \_  /Bugs/                |            | /4:22/     |       |      |      |
+| \_    UI freezes          |            |            |  4:22 |      |      |
 #+END:
 ** Thoughts that keep me up at night
 *** Performance
@@ -351,7 +353,9 @@ applications as well, I am good to go. So let's do this!
 ** Bugs                                                                 :bug:
 *** TODO [#A] UI freezes
     :LOGBOOK:
-    CLOCK: [2021-08-21 Sa 20:29]
+    CLOCK: [2021-08-23 Mo 22:32]--[2021-08-23 Mo 23:01] =>  0:29
+    CLOCK: [2021-08-23 Mo 20:09]--[2021-08-23 Mo 21:14] =>  1:05
+    CLOCK: [2021-08-21 Sa 20:29]--[2021-08-21 Sa 23:17] =>  2:48
     :END:
     Occasionally, the UI will freeze. The GLib timer that updates the beacon
     stops getting called as well, so I am fairly certain the problem is in the
