@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 01. 02. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-19 19:58:03 krylon>
+// Time-stamp: <2021-08-23 20:30:25 krylon>
 
 // +build ignore
 
@@ -241,7 +241,8 @@ This flag is not case-sensitive.`, strings.Join(orderedSteps, ", ")))
 		var sWorkerCnt = strconv.FormatInt(int64(workerCnt), 10)
 		// var cmd = exec.Command("go", "build", "-v", "-p", sWorkerCnt)
 		// The -tags flag is required so the build will succeed on Debian.
-		var args = []string{"build", "-v", "-tags", "pango_1_42,gtk_3_22", "-p", sWorkerCnt}
+		// var args = []string{"build", "-v", "-tags", "pango_1_42,gtk_3_22", "-p", sWorkerCnt}
+		var args = []string{"build", "-v", "-p", sWorkerCnt}
 		if (runtime.GOOS == "linux" || runtime.GOOS == "freebsd") && runtime.GOARCH == "amd64" {
 			args = append(args, "-race")
 		}
