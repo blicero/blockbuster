@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 23:16:37 krylon>
+// Time-stamp: <2021-08-23 22:34:39 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -252,6 +252,11 @@ func (g *GUI) ShowAndRun() {
 	go g.scanLoop()
 
 	g.win.ShowAll()
+	if common.Debug {
+		go g.heartbeatLoop()
+		glib.TimeoutAdd(1000, g.heartbeat)
+	}
+
 	// glib.TimeoutAdd(1000, g.beacon)
 	gtk.Main()
 } // func (g *GUI) ShowAndRun()
