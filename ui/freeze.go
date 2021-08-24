@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-23 22:55:34 krylon>
+// Time-stamp: <2021-08-24 23:11:13 krylon>
 
 package ui
 
@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-const heartbeatTimeout = time.Second * 5
+const heartbeatTimeout = time.Millisecond * 2500
 
-type heartbeatCounter int64
+type heartbeatCounter int
 
 var (
 	aliveCnt   heartbeatCounter = 0
-	heartbeatQ                  = make(chan heartbeatCounter)
+	heartbeatQ                  = make(chan heartbeatCounter, 2)
 )
 
 func (g *GUI) heartbeat() bool {
@@ -27,7 +27,7 @@ func (g *GUI) heartbeat() bool {
 } // func (g *GUI) heartbeat()
 
 func (g *GUI) heartbeatLoop() {
-	const maxMiss = 5
+	const maxMiss = 8
 	var (
 		timeout = time.NewTicker(heartbeatTimeout)
 		cnt     heartbeatCounter
@@ -47,6 +47,11 @@ func (g *GUI) heartbeatLoop() {
 					cnt,
 					missCnt)
 				os.Exit(1)
+				// gtk.MainQuit()
+			} else if missCnt > 1 {
+				g.log.Printf("[CRITICAL] Gtk3 Main loop has missed %d/%d heartbeats in a row\n",
+					missCnt,
+					maxMiss)
 			}
 		}
 	}
