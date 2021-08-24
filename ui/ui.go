@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-23 22:34:39 krylon>
+// Time-stamp: <2021-08-24 22:48:48 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -253,8 +253,11 @@ func (g *GUI) ShowAndRun() {
 
 	g.win.ShowAll()
 	if common.Debug {
-		go g.heartbeatLoop()
-		glib.TimeoutAdd(1000, g.heartbeat)
+		go func() {
+			time.Sleep(time.Second * 10)
+			go g.heartbeatLoop()
+			glib.TimeoutAdd(500, g.heartbeat)
+		}()
 	}
 
 	// glib.TimeoutAdd(1000, g.beacon)
@@ -815,6 +818,7 @@ func (g *GUI) handlePersonAdd() {
 		krylib.TraceInfo())
 	var (
 		err              error
+		msg              string
 		dlg              *gtk.Dialog
 		dbox             *gtk.Box
 		grid             *gtk.Grid
@@ -905,7 +909,7 @@ func (g *GUI) handlePersonAdd() {
 		name    string
 		y, m, d uint
 		bday    time.Time
-		person  *objects.Person
+		p       *objects.Person
 		res     = dlg.Run()
 	)
 
@@ -937,7 +941,7 @@ func (g *GUI) handlePersonAdd() {
 		return
 	}
 
-	if person, err = g.db.PersonAdd(name, bday); err != nil {
+	if p, err = g.db.PersonAdd(name, bday); err != nil {
 		var msg = fmt.Sprintf("Cannot add Person %q to database: %s",
 			name,
 			err.Error())
@@ -945,18 +949,46 @@ func (g *GUI) handlePersonAdd() {
 			msg)
 		g.displayMsg(msg)
 		return
-	} /*else if err = g.tagAdd(t); err != nil {
-		var msg = fmt.Sprintf("Cannot add Tag %s to UI: %s",
-			person.Name,
+	}
+
+	var (
+		store = g.tabs[tiPerson].store.(*gtk.TreeStore)
+		piter *gtk.TreeIter
+		files []objects.File
+	)
+
+	// First, we add the Person to the TreeModel.
+	piter = store.Append(nil)
+
+	store.SetValue(piter, 0, p.ID)              // nolint: errcheck
+	store.SetValue(piter, 1, p.Name)            // nolint: errcheck
+	store.SetValue(piter, 2, p.Birthday.Year()) // nolint: errcheck
+
+	if files, err = g.db.ActorGetByPerson(p); err != nil {
+		msg = fmt.Sprintf("Cannot load Files with acting credits by %s (%d): %s",
+			p.Name,
+			p.ID,
 			err.Error())
-		g.log.Printf("[ERROR] %s\n",
-			msg)
-		g.displayMsg(msg)
-	} */
+		goto ERROR
+	}
+
+	for _, f := range files {
+		var fiter = store.Append(piter)
+
+		// Is this a good idea?
+		store.SetValue(fiter, 0, f.ID)             // nolint: errcheck
+		store.SetValue(fiter, 1, "")               // nolint: errcheck
+		store.SetValue(fiter, 3, f.DisplayTitle()) // nolint: errcheck
+	}
 
 	g.log.Printf("[DEBUG] Person %s (born %s) was added to Database\n",
-		person.Name,
-		person.Birthday.Format(common.TimestampFormatDate))
+		p.Name,
+		p.Birthday.Format(common.TimestampFormatDate))
+	return
+
+ERROR:
+	g.log.Printf("[ERROR] %s\n", msg)
+	g.displayMsg(msg)
 } // func (g *GUI) handlerPersonAdd()
 
 func (g *GUI) playFile(f *objects.File) {

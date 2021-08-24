@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 14. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-21 23:11:03 krylon>
+// Time-stamp: <2021-08-24 22:32:42 krylon>
 
 package ui
 
@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
+	"strconv"
 
 	"github.com/blicero/blockbuster/objects"
 	"github.com/blicero/krylib"
@@ -49,9 +50,9 @@ func (g *GUI) loadPeople() bool {
 		// First, we add the Person to the TreeModel.
 		piter = store.Append(nil)
 
-		store.SetValue(piter, 0, p.ID)              // nolint: errcheck
-		store.SetValue(piter, 1, p.Name)            // nolint: errcheck
-		store.SetValue(piter, 2, p.Birthday.Year()) // nolint: errcheck
+		store.SetValue(piter, 0, p.ID)           // nolint: errcheck
+		store.SetValue(piter, 1, p.Name)         // nolint: errcheck
+		store.SetValue(piter, 2, p.BDayString()) // nolint: errcheck
 
 		if files, err = g.db.ActorGetByPerson(p); err != nil {
 			msg = fmt.Sprintf("Cannot load Files with acting credits by %s (%d): %s",
@@ -68,6 +69,9 @@ func (g *GUI) loadPeople() bool {
 			store.SetValue(fiter, 0, f.ID)             // nolint: errcheck
 			store.SetValue(fiter, 1, "")               // nolint: errcheck
 			store.SetValue(fiter, 3, f.DisplayTitle()) // nolint: errcheck
+			if f.Year != 0 {
+				store.SetValue(fiter, 2, strconv.FormatInt(f.Year, 10)) // nolint: errcheck
+			}
 		}
 	}
 
