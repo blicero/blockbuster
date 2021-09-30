@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 23. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-24 23:11:13 krylon>
+// Time-stamp: <2021-08-26 19:10:25 krylon>
 
 package ui
 
@@ -47,7 +47,6 @@ func (g *GUI) heartbeatLoop() {
 					cnt,
 					missCnt)
 				os.Exit(1)
-				// gtk.MainQuit()
 			} else if missCnt > 1 {
 				g.log.Printf("[CRITICAL] Gtk3 Main loop has missed %d/%d heartbeats in a row\n",
 					missCnt,

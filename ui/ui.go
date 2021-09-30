@@ -2,7 +2,7 @@
 // -*- mode: go; coding: utf-8; -*-
 // Created on 05. 08. 2021 by Benjamin Walkenhorst
 // (c) 2021 Benjamin Walkenhorst
-// Time-stamp: <2021-08-24 22:48:48 krylon>
+// Time-stamp: <2021-08-26 19:18:59 krylon>
 
 // Package ui provides the user interface for the video library.
 package ui
@@ -38,7 +38,7 @@ const (
 
 const (
 	qDepth        = 128
-	refInterval   = time.Second * 10
+	refInterval   = time.Second * 10 // nolint: deadcode,unused,varcheck
 	defaultPlayer = "/usr/bin/mpv"
 	playerEnv     = "VIDEOPLAYER"
 )
@@ -249,7 +249,7 @@ func (g *GUI) ShowAndRun() {
 		return
 	}
 
-	go g.scanLoop()
+	// go g.scanLoop()
 
 	g.win.ShowAll()
 	if common.Debug {
@@ -264,6 +264,7 @@ func (g *GUI) ShowAndRun() {
 	gtk.Main()
 } // func (g *GUI) ShowAndRun()
 
+// nolint: deadcode,unused
 func (g *GUI) scanLoop() {
 	krylib.Trace()
 	defer g.log.Printf("[TRACE] EXIT %s\n",
